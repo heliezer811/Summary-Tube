@@ -58,6 +58,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
     implementation("androidx.navigation:navigation-compose:2.7.6") // Para navegação
+    implementation("androidx.appcompat:appcompat:1.6.1") // Para temas
+    implementation("com.google.mlkit:language-id:16.0.0") // Para detecção de idioma
     implementation("com.squareup.retrofit2:retrofit:2.9.0") // Para chamadas HTTP
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.theokanning.openai-gpt:openai-java-client:0.12.0") // SDK OpenAI
