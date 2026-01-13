@@ -32,6 +32,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 
+import com.github.teamnewpipe.newpipe.extractor.NewPipe
+import com.github.teamnewpipe.newpipe.extractor.services.youtube.YoutubeService
+import com.github.teamnewpipe.newpipe.extractor.stream.StreamInfo
+import com.theokanning.openai.completion.CompletionRequest
+import com.theokanning.openai.service.OpenAiService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -242,3 +252,43 @@ Para cada seção:
  - Identifique e analise explicitamente quaisquer contrastes, tensões, contradições ou mudanças de perspectiva ao longo da discussão. Preste especial atenção às relações dialéticas entre os conceitos.
 Comece a resposta imediatamente com um breve parágrafo resumindo os temas principais. Não o rotule nem o descreva.
 Ao final, inclua uma seção de conclusão listando todos os livros, pessoas ou recursos mencionados, juntamente com uma breve explicação de sua relevância."""
+
+fun initNewPipe() {
+    NewPipe.init(YoutubeService(0))
+}
+
+suspend fun extractTranscription(videoUrl: String): String {
+    return withContext(Dispatchers.IO) {
+        val info = StreamInfo.getInfo(videoUrl)
+        info.subtitles.joinToString("\n") { it.content } // Assume legendas disponíveis; handle erros
+    }
+}
+
+suspend fun generateSummary(transcription: String, prompt: String, model: String, apiKey: String): String {
+    return withContext(Dispatchers.IO) {
+        val service = OpenAiService(apiKey)
+        val request = CompletionRequest.builder()
+            .model(model)
+            .prompt("$prompt\nTranscrição: $transcription")
+            .maxTokens(2000)
+            .build()
+        service.createCompletion(request).choices[0].text
+    }
+}
+
+// No Button "Send" do MainActivity, substitua placeholder por:
+CoroutineScope(Dispatchers.IO).launch {
+    val transcription = extractTranscription(link)
+    val summary = generateSummary(transcription, prompt, model, apiKey)
+    withContext(Dispatchers.Main) {
+        result = summary
+        showResult = true
+    }
+}
+
+// Adicione no init de MainActivity: initNewPipe()
+
+// Para iniciar floating: Adicione um Button no Scaffold:
+Button(onClick = { context.startService(Intent(context, FloatingService::class.java)) }) {
+    Text("Show Floating Widget")
+}
