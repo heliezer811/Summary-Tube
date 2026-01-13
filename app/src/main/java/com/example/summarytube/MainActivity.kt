@@ -1,22 +1,26 @@
 package com.example.summarytube
 
-import android.provider.Settings
-import android.net.Uri
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,21 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-
+import androidx.compose.ui.unit.dp
 import com.github.teamnewpipe.newpipe.extractor.NewPipe
 import com.github.teamnewpipe.newpipe.extractor.services.youtube.YoutubeService
 import com.github.teamnewpipe.newpipe.extractor.stream.StreamInfo
+import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.theokanning.openai.completion.CompletionRequest
 import com.theokanning.openai.service.OpenAiService
 import kotlinx.coroutines.CoroutineScope
@@ -46,26 +42,58 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-// Antes de launch coroutine:
-isLoading = true
-
-// No withContext(Dispatchers.Main) após sucesso:
-isLoading = false
-showResult = true // ou showPopup = true
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        initNewPipe()
         setContent {
             SummaryTubeApp()
         }
     }
 }
 
+fun initNewPipe() {
+    NewPipe.init(YoutubeService(0))
+}
+
+suspend fun extractTranscription(videoUrl: String): String {
+    return withContext(Dispatchers.IO) {
+        try {
+            val info = StreamInfo.getInfo(videoUrl)
+            val subtitles = info.subtitles.firstOrNull { it.languageCode.startsWith("en") || it.languageCode.startsWith("pt") }
+            subtitles?.content ?: throw Exception("Sem transcrição disponível")
+        } catch (e: Exception) {
+            throw Exception("Falha ao extrair: ${e.message}")
+        }
+    }
+}
+
+suspend fun detectLanguage(text: String): String {
+    return withContext(Dispatchers.IO) {
+        val identifier = LanguageIdentification.getClient()
+        var lang = "und"
+        identifier.identifyLanguage(text)
+            .addOnSuccessListener { languageCode -> lang = languageCode }
+            .addOnFailureListener { /* handle */ }
+        lang
+    }
+}
+
+suspend fun generateSummary(transcription: String, prompt: String, model: String, apiKey: String): String {
+    return withContext(Dispatchers.IO) {
+        val service = OpenAiService(apiKey)
+        val request = CompletionRequest.builder()
+            .model(model)
+            .prompt("$prompt\nTranscrição: $transcription")
+            .maxTokens(2000)
+            .build()
+        service.createCompletion(request).choices[0].text
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SummaryTubeApp() {
-    val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -77,15 +105,24 @@ fun SummaryTubeApp() {
     var link by remember { mutableStateOf("") }
     var result by remember { mutableStateOf("") }
     var showResult by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        drawerContent = { SettingsScreen(apiKey, model, prompt, onSave = { newKey, newModel, newPrompt ->
-            apiKey = newKey
-            model = newModel
-            prompt = newPrompt
-            prefs.edit().putString("api_key", newKey).putString("model", newModel).putString("prompt", newPrompt).apply()
-        }) }
+        drawerContent = {
+            AnimatedVisibility(
+                visible = drawerState.isOpen,
+                enter = slideInHorizontally(),
+                exit = slideOutHorizontally()
+            ) {
+                SettingsScreen(apiKey, model, prompt, onSave = { newKey, newModel, newPrompt ->
+                    apiKey = newKey
+                    model = newModel
+                    prompt = newPrompt
+                    prefs.edit().putString("api_key", newKey).putString("model", newModel).putString("prompt", newPrompt).apply()
+                })
+            }
+        }
     ) {
         Scaffold(
             topBar = {
@@ -129,8 +166,25 @@ fun SummaryTubeApp() {
                     Button(onClick = {
                         if (link.isNotEmpty() && apiKey.isNotEmpty()) {
                             // TODO: Na Parte 3, implementar extração/transcrição/resumo aqui
-                            result = "Resultado simulado para $link" // Placeholder
-                            showResult = true
+                            isLoading = true
+                            CoroutineScope(Dispatchers.IO).launch {
+                                try {
+                                    val transcription = extractTranscription(link)
+                                    val detectedLang = detectLanguage(transcription)
+                                    val finalPrompt = if (detectedLang != "pt") prompt else prompt.replace("traduza para português brasileiro se já não estiver em português", "")
+                                    val summary = generateSummary(transcription, finalPrompt, model, apiKey)
+                                    withContext(Dispatchers.Main) {
+                                        result = summary
+                                        showResult = true
+                                        isLoading = false
+                                    }
+                                } catch (e: Exception) {
+                                    withContext(Dispatchers.Main) {
+                                        isLoading = false
+                                        Toast.makeText(context, "Erro: ${e.message}", Toast.LENGTH_LONG).show()
+                                    }
+                                }
+                            }
                         } else {
                             Toast.makeText(context, "Adicione API key e link", Toast.LENGTH_SHORT).show()
                         }
@@ -150,7 +204,7 @@ fun SummaryTubeApp() {
                     contentAlignment = Alignment.Center
                 ) {
                     AnimatedVisibility(
-                        visible = !showResult,
+                        visible = !showResult && !isLoading,
                         enter = fadeIn(),
                         exit = fadeOut()
                     ) {
@@ -162,6 +216,9 @@ fun SummaryTubeApp() {
                         exit = fadeOut()
                     ) {
                         Text(result, modifier = Modifier.padding(16.dp))
+                    }
+                    if (isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
                 }
 
@@ -176,13 +233,28 @@ fun SummaryTubeApp() {
                             val intent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
                                 putExtra(Intent.EXTRA_TEXT, result)
-                                setPackage("md.obsidian") // Pacote do Obsidian
+                                setPackage("md.obsidian")// Pacote do Obsidian
                             }
                             context.startActivity(Intent.createChooser(intent, "Share to Obsidian"))
                         }) {
                             Text("Share to Obsidian")
                         }
                     }
+                }
+
+                Spacer(Modifier.height(16.dp))
+                Button(onClick = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
+                        val intent = Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:${context.packageName}")
+                        )
+                        context.startActivity(intent)
+                    } else {
+                        context.startService(Intent(context, FloatingService::class.java))
+                    }
+                }) {
+                    Text("Show Floating Widget")
                 }
             }
         }
@@ -199,7 +271,7 @@ fun SettingsScreen(
     var newApiKey by remember { mutableStateOf(apiKey) }
     var newModel by remember { mutableStateOf(model) }
     var newPrompt by remember { mutableStateOf(prompt) }
-    var showApiKey by remember { mutableStateOf(false) } // Para censurar
+    var showApiKey by remember { mutableStateOf(false) }// Para censurar
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Settings", style = MaterialTheme.typography.headlineMedium)
@@ -263,89 +335,3 @@ Para cada seção:
  - Identifique e analise explicitamente quaisquer contrastes, tensões, contradições ou mudanças de perspectiva ao longo da discussão. Preste especial atenção às relações dialéticas entre os conceitos.
 Comece a resposta imediatamente com um breve parágrafo resumindo os temas principais. Não o rotule nem o descreva.
 Ao final, inclua uma seção de conclusão listando todos os livros, pessoas ou recursos mencionados, juntamente com uma breve explicação de sua relevância."""
-
-fun initNewPipe() {
-    NewPipe.init(YoutubeService(0))
-}
-
-    Button(onClick = { context.startService(Intent(context, FloatingService::class.java)) }) {
-        Text("Show Floating Widget")
-    }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-        val intent = Intent(
-            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-            Uri.parse("package:$packageName")
-        )
-        startActivity(intent)
-    } else {
-        startService(Intent(this, FloatingService::class.java))
-    }
-
-suspend fun extractTranscription(videoUrl: String): String {
-    return withContext(Dispatchers.IO) {
-        try {
-            val info = StreamInfo.getInfo(videoUrl)
-            val subtitles = info.subtitles.firstOrNull { it.languageCode.startsWith("en") || it.languageCode.startsWith("pt") } // Priorize EN/PT
-            subtitles?.content ?: throw Exception("Sem transcrição disponível")
-        } catch (e: Exception) {
-            throw Exception("Falha ao extrair: ${e.message}")
-        }
-    }
-}
-
-suspend fun generateSummary(transcription: String, prompt: String, model: String, apiKey: String): String {
-    return withContext(Dispatchers.IO) {
-        val service = OpenAiService(apiKey)
-        val request = CompletionRequest.builder()
-            .model(model)
-            .prompt("$prompt\nTranscrição: $transcription")
-            .maxTokens(2000)
-            .build()
-        service.createCompletion(request).choices[0].text
-    }
-}
-
-// No Button "Send" do MainActivity, substitua placeholder por:
-CoroutineScope(Dispatchers.IO).launch {
-    val transcription = extractTranscription(link)
-    val summary = generateSummary(transcription, prompt, model, apiKey)
-    withContext(Dispatchers.Main) {
-        result = summary
-        showResult = true
-    }
-}
-
-    launch {
-        try {
-            val transcription = extractTranscription(link)
-            // Detect idioma (opcional, já que prompt lida; mas para precisão)
-            val detectedLang = detectLanguage(transcription)
-            val finalPrompt = if (detectedLang != "pt") prompt else prompt.replace("traduza para português brasileiro se já não estiver em português", "") // Ajuste prompt se já em PT
-            val summary = generateSummary(transcription, finalPrompt, model, apiKey)
-            // ...
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                isLoading = false
-                Toast.makeText(context, "Erro: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-
-// Função detectLanguage (adicione no arquivo):
-import com.google.mlkit.nl.languageid.LanguageIdentification
-
-suspend fun detectLanguage(text: String): String {
-    return withContext(Dispatchers.IO) {
-        val identifier = LanguageIdentification.getClient()
-        var lang = "und"
-        identifier.identifyLanguage(text)
-            .addOnSuccessListener { languageCode -> lang = languageCode }
-            .addOnFailureListener { /* handle */ }
-        lang
-    }
-}
-
-// No UI: Adicione no Box do canvas:
-if (isLoading) {
-    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-}
