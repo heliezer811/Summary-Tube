@@ -33,6 +33,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+// Antes de launch coroutine:
+isLoading = true
+
+// No withContext(Dispatchers.Main) após sucesso:
+isLoading = false
+showResult = true // ou showPopup = true
+
 class FloatingService : Service() {
     private lateinit var windowManager: WindowManager
     private lateinit var floatingView: LinearLayout
@@ -156,4 +163,40 @@ class FloatingService : Service() {
             }
         }
     }
+}
+
+// Adicione try-catch na coroutine:
+launch {
+    try {
+        val transcription = extractTranscription(link)
+        // Detect idioma (opcional, já que prompt lida; mas para precisão)
+        val detectedLang = detectLanguage(transcription)
+        val finalPrompt = if (detectedLang != "pt") prompt else prompt.replace("traduza para português brasileiro se já não estiver em português", "") // Ajuste prompt se já em PT
+        val summary = generateSummary(transcription, finalPrompt, model, apiKey)
+        // ...
+    } catch (e: Exception) {
+        withContext(Dispatchers.Main) {
+            isLoading = false
+            Toast.makeText(context, "Erro: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+}
+
+// Função detectLanguage (adicione no arquivo):
+import com.google.mlkit.nl.languageid.LanguageIdentification
+
+suspend fun detectLanguage(text: String): String {
+    return withContext(Dispatchers.IO) {
+        val identifier = LanguageIdentification.getClient()
+        var lang = "und"
+        identifier.identifyLanguage(text)
+            .addOnSuccessListener { languageCode -> lang = languageCode }
+            .addOnFailureListener { /* handle */ }
+        lang
+    }
+}
+
+// No UI: Adicione no Box do canvas:
+if (isLoading) {
+    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
 }
