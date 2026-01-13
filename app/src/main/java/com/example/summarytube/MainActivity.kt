@@ -10,6 +10,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
@@ -281,8 +283,13 @@ fun initNewPipe() {
 
 suspend fun extractTranscription(videoUrl: String): String {
     return withContext(Dispatchers.IO) {
-        val info = StreamInfo.getInfo(videoUrl)
-        info.subtitles.joinToString("\n") { it.content } // Assume legendas disponíveis; handle erros
+        try {
+            val info = StreamInfo.getInfo(videoUrl)
+            val subtitles = info.subtitles.firstOrNull { it.languageCode.startsWith("en") || it.languageCode.startsWith("pt") } // Priorize EN/PT
+            subtitles?.content ?: throw Exception("Sem transcrição disponível")
+        } catch (e: Exception) {
+            throw Exception("Falha ao extrair: ${e.message}")
+        }
     }
 }
 
