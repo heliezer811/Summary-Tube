@@ -8,37 +8,31 @@ import android.os.Build
 import android.os.IBinder
 import android.view.LayoutInflater
 import android.view.WindowManager
-import android.widget.*
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.unit.dp
-import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-// Antes de launch coroutine:
-isLoading = true
-
-// No withContext(Dispatchers.Main) após sucesso:
-isLoading = false
-showResult = true // ou showPopup = true
+import com.google.mlkit.nl.languageid.LanguageIdentification
 
 class FloatingService : Service() {
     private lateinit var windowManager: WindowManager
@@ -83,7 +77,8 @@ class FloatingService : Service() {
         var link by remember { mutableStateOf("") }
         var result by remember { mutableStateOf("") }
         var showPopup by remember { mutableStateOf(false) }
-        val popupHeight by animateDpAsState(if (showPopup) 400.dp else 0.dp) // Animação expansão
+        var isLoading by remember { mutableStateOf(false) }
+        val popupHeight by animateDpAsState(if (showPopup) 400.dp else 0.dp)
 
         Surface(
             color = MaterialTheme.colorScheme.surface,
@@ -91,9 +86,8 @@ class FloatingService : Service() {
             modifier = Modifier.wrapContentSize()
         ) {
             Column {
-                // Barra de pesquisa (como img-widget.png)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painter = painterResource(id = R.drawable.ic_widget), contentDescription = "Icon", tint = Color.Unspecified)
+                    Icon(painter = painterResource(id = R.drawable.ic_widget), contentDescription = "Icon")
                     TextField(
                         value = link,
                         onValueChange = { link = it },
@@ -108,12 +102,23 @@ class FloatingService : Service() {
                     }
                     IconButton(onClick = {
                         if (link.isNotEmpty() && apiKey.isNotEmpty()) {
+                            isLoading = true
                             CoroutineScope(Dispatchers.IO).launch {
-                                val transcription = extractTranscription(link)
-                                val summary = generateSummary(transcription, prompt, model, apiKey)
-                                withContext(Dispatchers.Main) {
-                                    result = summary
-                                    showPopup = true
+                                try {
+                                    val transcription = extractTranscription(link)
+                                    val detectedLang = detectLanguage(transcription)
+                                    val finalPrompt = if (detectedLang != "pt") prompt else prompt.replace("traduza para português brasileiro se já não estiver em português", "")
+                                    val summary = generateSummary(transcription, finalPrompt, model, apiKey)
+                                    withContext(Dispatchers.Main) {
+                                        result = summary
+                                        showPopup = true
+                                        isLoading = false
+                                    }
+                                } catch (e: Exception) {
+                                    withContext(Dispatchers.Main) {
+                                        isLoading = false
+                                        Toast.makeText(context, "Erro: ${e.message}", Toast.LENGTH_LONG).show()
+                                    }
                                 }
                             }
                         } else {
@@ -124,7 +129,6 @@ class FloatingService : Service() {
                     }
                 }
 
-                // Popup canvas com animação (como img-popup.png)
                 AnimatedVisibility(
                     visible = showPopup,
                     enter = fadeIn(),
@@ -139,7 +143,7 @@ class FloatingService : Service() {
                         contentAlignment = Alignment.TopStart
                     ) {
                         Column {
-                            Icon(painter = painterResource(id = R.drawable.ic_widget), contentDescription = "Icon", tint = Color.Unspecified)
+                            Icon(painter = painterResource(id = R.drawable.ic_widget), contentDescription = "Icon")
                             Text(result, modifier = Modifier.padding(16.dp))
                             Row {
                                 val clipboard = LocalClipboardManager.current
@@ -157,46 +161,13 @@ class FloatingService : Service() {
                                     Text("Share to Obsidian")
                                 }
                             }
+                            if (isLoading) {
+                                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                            }
                         }
                     }
                 }
             }
         }
     }
-}
-
-// Adicione try-catch na coroutine:
-launch {
-    try {
-        val transcription = extractTranscription(link)
-        // Detect idioma (opcional, já que prompt lida; mas para precisão)
-        val detectedLang = detectLanguage(transcription)
-        val finalPrompt = if (detectedLang != "pt") prompt else prompt.replace("traduza para português brasileiro se já não estiver em português", "") // Ajuste prompt se já em PT
-        val summary = generateSummary(transcription, finalPrompt, model, apiKey)
-        // ...
-    } catch (e: Exception) {
-        withContext(Dispatchers.Main) {
-            isLoading = false
-            Toast.makeText(context, "Erro: ${e.message}", Toast.LENGTH_LONG).show()
-        }
-    }
-}
-
-// Função detectLanguage (adicione no arquivo):
-import com.google.mlkit.nl.languageid.LanguageIdentification
-
-suspend fun detectLanguage(text: String): String {
-    return withContext(Dispatchers.IO) {
-        val identifier = LanguageIdentification.getClient()
-        var lang = "und"
-        identifier.identifyLanguage(text)
-            .addOnSuccessListener { languageCode -> lang = languageCode }
-            .addOnFailureListener { /* handle */ }
-        lang
-    }
-}
-
-// No UI: Adicione no Box do canvas:
-if (isLoading) {
-    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
 }
