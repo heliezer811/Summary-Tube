@@ -1,5 +1,7 @@
 package com.example.summarytube
 
+import android.provider.Settings
+import android.net.Uri
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -257,6 +259,19 @@ fun initNewPipe() {
     NewPipe.init(YoutubeService(0))
 }
 
+    Button(onClick = { context.startService(Intent(context, FloatingService::class.java)) }) {
+        Text("Show Floating Widget")
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:$packageName")
+        )
+        startActivity(intent)
+    } else {
+        startService(Intent(this, FloatingService::class.java))
+    }
+
 suspend fun extractTranscription(videoUrl: String): String {
     return withContext(Dispatchers.IO) {
         val info = StreamInfo.getInfo(videoUrl)
@@ -289,6 +304,4 @@ CoroutineScope(Dispatchers.IO).launch {
 // Adicione no init de MainActivity: initNewPipe()
 
 // Para iniciar floating: Adicione um Button no Scaffold:
-Button(onClick = { context.startService(Intent(context, FloatingService::class.java)) }) {
-    Text("Show Floating Widget")
-}
+
