@@ -1,6 +1,6 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    id("com.android.application") version "8.0.2" apply false // Use 8.0.2 for stability
+    id("org.jetbrains.kotlin.android") version "1.8.20" apply false // Compatível com Compose
 }
 
 android {
