@@ -1,5 +1,7 @@
 package com.example.summarytube
 
+import com.example.summarytube.ui.theme.SummaryTubeTheme
+
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
