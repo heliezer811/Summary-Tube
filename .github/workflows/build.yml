@@ -5,7 +5,7 @@ on: [push, workflow_dispatch]
 jobs:
   build:
     env:
-      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxPermSize=512m"
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
