@@ -19,9 +19,9 @@ jobs:
       - name: Limpar Gradle Cache
         run: ./gradlew clean
       - name: Resolver Dependências
-        run: ./gradlew dependencies --configuration compileClasspath --stacktrace --debug
+        run: ./gradlew dependencies --configuration debugCompileClasspath --stacktrace --debug
       - name: Build with Gradle
-        run: ./gradlew build --stacktrace --debug --scan
+        run: ./gradlew build --stacktrace --debug
       - name: Build Release APK
         run: ./gradlew assembleDebug --stacktrace
       - name: Upload APK
