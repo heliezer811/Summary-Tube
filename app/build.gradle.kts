@@ -62,7 +62,7 @@ dependencies {
     implementation("com.google.mlkit:language-id:16.0.0") // Para detecção de idioma
     implementation("com.squareup.retrofit2:retrofit:2.9.0") // Para chamadas HTTP
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.theokanning.openai-gpt3-java:client:0.12.0") // SDK OpenAI
+    implementation("com.theokanning.openai-gpt3-java:client:0.14.0") // SDK OpenAI
     implementation("com.github.TeamNewPipe:NewPipeExtractor:v0.25.0") // Para extrair transcrição YouTube
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
