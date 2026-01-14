@@ -4,6 +4,8 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
+    env:
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxPermSize=512m"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,8 +16,10 @@ jobs:
           distribution: 'temurin'
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Limpar Gradle Cache
+        run: ./gradlew clean
       - name: Build with Gradle
-        run: ./gradlew build --stacktrace --info
+        run: ./gradlew build --stacktrace --debug
       - name: Build Release APK
         run: ./gradlew assembleDebug --stacktrace
       - name: Upload APK
