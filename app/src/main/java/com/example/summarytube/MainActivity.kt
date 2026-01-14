@@ -1,6 +1,7 @@
 package com.example.summarytube
 
 import com.example.summarytube.ui.theme.SummaryTubeTheme
+import androidx.compose.ui.res.stringResource // Para ler o @string/app_name
 
 import android.content.Context
 import android.content.Intent
@@ -33,9 +34,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.github.teamnewpipe.newpipe.extractor.NewPipe
-import com.github.teamnewpipe.newpipe.extractor.services.youtube.YoutubeService
-import com.github.teamnewpipe.newpipe.extractor.stream.StreamInfo
+import org.schabi.newpipe.extractor.NewPipe
+import org.schabi.newpipe.extractor.services.youtube.YoutubeService
+import org.schabi.newpipe.extractor.stream.StreamInfo
 import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.theokanning.openai.completion.CompletionRequest
 import com.theokanning.openai.service.OpenAiService
