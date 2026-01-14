@@ -1,5 +1,10 @@
 package com.example.summarytube
 
+import android.view.Gravity
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+
 import android.app.Service
 import android.content.Context
 import android.content.Intent
