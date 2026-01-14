@@ -18,8 +18,10 @@ jobs:
         run: chmod +x gradlew
       - name: Limpar Gradle Cache
         run: ./gradlew clean
+      - name: Resolver Dependências
+        run: ./gradlew dependencies --configuration compileClasspath --stacktrace --debug
       - name: Build with Gradle
-        run: ./gradlew build --stacktrace --debug
+        run: ./gradlew build --stacktrace --debug --scan
       - name: Build Release APK
         run: ./gradlew assembleDebug --stacktrace
       - name: Upload APK
