@@ -1,6 +1,6 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    id("com.android.application") version "8.0.2" apply false
+    id("org.jetbrains.kotlin.android") version "1.8.20" apply false // Baixe versão de Kotlin se necessário
 }
 
 android {
