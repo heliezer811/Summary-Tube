@@ -60,6 +60,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.6") // Para navegação
     implementation("androidx.appcompat:appcompat:1.6.1") // Para temas
     implementation("com.google.mlkit:language-id:16.0.0") // Para detecção de idioma
+    implementation("com.google.android.material:material:1.11.0")
     implementation("com.squareup.retrofit2:retrofit:2.9.0") // Para chamadas HTTP
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.theokanning.openai-gpt3-java:client:0.14.0") // SDK OpenAI
