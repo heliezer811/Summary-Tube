@@ -3,4 +3,6 @@
     <string name="api_key_label">OpenAI API Key</string>
     <string name="api_key_hint">Enter your key</string>
     <string name="save_button">Save</string>
+    <string name="url_prompt">Cole a URL do vídeo do YouTube</string>
+    <string name="summarize_button">Resumir</string>
 </resources>
