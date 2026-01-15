@@ -63,7 +63,7 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0") // Para chamadas HTTP
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.theokanning.openai-gpt3-java:client:0.14.0") // SDK OpenAI
-    implementation("com.github.TeamNewPipe:NewPipeExtractor:0.25.0") // Para extrair transcrição YouTube
+    implementation("com.github.TeamNewPipe:NewPipeExtractor:v0.24.4") // Para extrair transcrição YouTube
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
