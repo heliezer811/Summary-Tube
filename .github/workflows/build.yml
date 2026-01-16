@@ -5,7 +5,7 @@ on: [push, workflow_dispatch]
 jobs:
   build:
     env:
-      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx8g -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=2"  # Aumentado para 8GB e workers limitados para 2
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx6g -Dorg.gradle.parallel=false -Dorg.gradle.workers.max=1"  # Aumentado para 8GB e workers limitados para 2
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,8 +20,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-#      - name: Limpar Gradle Cache
-#        run: ./gradlew clean
+      - name: Limpar Cache
+        run: ./gradlew clean
 #      - name: Resolver Dependências
 #        run: ./gradlew dependencies --configuration debugCompileClasspath --stacktrace --debug --refresh-dependencies
 
