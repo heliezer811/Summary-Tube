@@ -75,7 +75,7 @@ suspend fun extractTranscription(videoUrl: String): String {
     }
 }
 
-suspend fun detectLanguage(text: String): String {
+suspend fun Language(text: String): String {
     return withContext(Dispatchers.IO) {
         val identifier = LanguageIdentification.getClient()
         var lang = "und"
@@ -91,7 +91,7 @@ suspend fun generateSummary(transcription: String, prompt: String, model: String
         val service = OpenAiService(apiKey)
         val request = CompletionRequest.builder()
             .model(model)
-            .prompt("$prompt\nTranscrição: $transcription")
+            .prompt("$prompt\nDetecte o idioma da transcrição e traduza para português brasileiro se necessário. Transcrição: $transcription")
             .maxTokens(2000)
             .build()
         service.createCompletion(request).choices[0].text
