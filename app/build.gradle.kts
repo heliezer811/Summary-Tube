@@ -73,7 +73,7 @@ dependencies {
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
     implementation("androidx.navigation:navigation-compose:2.7.6") // Para navegação
     implementation("androidx.appcompat:appcompat:1.6.1") // Para temas
-    implementation("com.google.mlkit:language-id:16.0.0") // Para detecção de idioma
+    //implementation("com.google.mlkit:language-id:16.0.0") // Para detecção de idioma
     implementation("com.google.android.material:material:1.11.0")
     implementation("com.google.guava:guava:32.1.3-android")
     //implementation("com.squareup.retrofit2:retrofit:2.9.0") // Para chamadas HTTP
