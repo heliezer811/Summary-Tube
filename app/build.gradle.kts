@@ -9,7 +9,8 @@ android {
     }
 
     dexOptions {
-        javaMaxHeapSize = "4g"
+        javaMaxHeapSize = "6g"  # Memória específica para DEX/R8
+        preDexLibraries = false  # Desativa pré-dex para reduzir memória
     }
 
     namespace = "com.example.summarytube"
