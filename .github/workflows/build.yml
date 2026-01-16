@@ -4,8 +4,8 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
-    #env:
-    #  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
+    env:
+      GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
