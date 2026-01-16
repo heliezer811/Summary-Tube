@@ -8,6 +8,10 @@ android {
         abortOnError = false
     }
 
+    dexOptions {
+        javaMaxHeapSize = "4g"
+    }
+
     namespace = "com.example.summarytube"
     compileSdk = 34
 
