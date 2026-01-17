@@ -71,7 +71,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    implementation("androidx.drawerlayout:drawerlayout:1.2.0")
+    //implementation("androidx.drawerlayout:drawerlayout:1.2.0")
     implementation("androidx.navigation:navigation-compose:2.7.6") // Para navegação
     implementation("androidx.appcompat:appcompat:1.6.1") // Para temas
     //implementation("com.google.mlkit:language-id:16.0.0") // Para detecção de idioma
