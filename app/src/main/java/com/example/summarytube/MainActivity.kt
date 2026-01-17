@@ -1,6 +1,6 @@
 package com.example.summarytube
 
-import com.example.summarytube.ui.theme.SummaryTubeTheme
+//import com.example.summarytube.ui.theme.SummaryTubeTheme
 import androidx.compose.ui.res.stringResource // Para ler o @string/app_name
 
 import android.content.Context
