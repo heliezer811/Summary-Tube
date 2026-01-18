@@ -26,7 +26,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+//import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -38,10 +38,10 @@ import androidx.compose.ui.unit.dp
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.services.youtube.YoutubeService
 import org.schabi.newpipe.extractor.stream.StreamInfo
-import com.github.teamnewpipe.newpipe.extractor.NewPipe
-import com.github.teamnewpipe.newpipe.extractor.services.youtube.YoutubeService
-import com.github.teamnewpipe.newpipe.extractor.downloader.Downloader
-import com.google.mlkit.nl.languageid.LanguageIdentification
+//import com.github.teamnewpipe.newpipe.extractor.NewPipe
+//import com.github.teamnewpipe.newpipe.extractor.services.youtube.YoutubeService
+//import com.github.teamnewpipe.newpipe.extractor.downloader.Downloader
+//import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.theokanning.openai.completion.CompletionRequest
 import com.theokanning.openai.service.OpenAiService
 import kotlinx.coroutines.CoroutineScope
@@ -72,17 +72,6 @@ suspend fun extractTranscription(videoUrl: String): String {
         } catch (e: Exception) {
             throw Exception("Falha ao extrair: ${e.message}")
         }
-    }
-}
-
-suspend fun Language(text: String): String {
-    return withContext(Dispatchers.IO) {
-        val identifier = LanguageIdentification.getClient()
-        var lang = "und"
-        identifier.identifyLanguage(text)
-            .addOnSuccessListener { languageCode -> lang = languageCode }
-            .addOnFailureListener { /* handle */ }
-        lang
     }
 }
 
@@ -177,9 +166,7 @@ fun SummaryTubeApp() {
                             CoroutineScope(Dispatchers.IO).launch {
                                 try {
                                     val transcription = extractTranscription(link)
-                                    val detectedLang = detectLanguage(transcription)
-                                    val finalPrompt = if (detectedLang != "pt") prompt else prompt.replace("traduza para português brasileiro se já não estiver em português", "")
-                                    val summary = generateSummary(transcription, finalPrompt, model, apiKey)
+                                    val summary = generateSummary(transcription, Prompt, model, apiKey)
                                     withContext(Dispatchers.Main) {
                                         result = summary
                                         showResult = true
