@@ -99,7 +99,7 @@ class FloatingService : Service() {
                         val clipboard = LocalClipboardManager.current
                         link = clipboard.getText()?.text ?: ""
                     }) {
-                        Icon(painterResource(android.R.drawable.ic_menu_paste), "Paste")
+                        Icon(painterResource(AndroidR.drawable.ic_menu_paste), "Paste")
                     }
                     IconButton(onClick = {
                         if (link.isNotEmpty() && apiKey.isNotEmpty()) {
@@ -126,7 +126,7 @@ class FloatingService : Service() {
                             Toast.makeText(context, "Adicione API key e link", Toast.LENGTH_SHORT).show()
                         }
                     }) {
-                        Icon(painterResource(android.R.drawable.ic_menu_send), "Send")
+                        Icon(painterResource(AndroidR.drawable.ic_menu_send), "Send")
                     }
                 }
 
