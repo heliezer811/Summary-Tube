@@ -32,7 +32,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-//import com.google.mlkit.nl.languageid.LanguageIdentification
 import android.R as AndroidR
 
 class FloatingService : Service() {
@@ -107,9 +106,7 @@ class FloatingService : Service() {
                             CoroutineScope(Dispatchers.IO).launch {
                                 try {
                                     val transcription = extractTranscription(link)
-                                    //val detectedLang = detectLanguage(transcription)
-                                    //val finalPrompt = if (detectedLang != "pt") prompt else prompt.replace("traduza para português brasileiro se já não estiver em português", "")
-                                    val summary = generateSummary(transcription, Prompt, model, apiKey)
+                                    val summary = generateSummary(transcription, prompt, model, apiKey)
                                     withContext(Dispatchers.Main) {
                                         result = summary
                                         showPopup = true
