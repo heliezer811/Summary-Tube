@@ -37,6 +37,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.services.youtube.YoutubeService
+import org.schabi.newpipe.extractor.downloader.Downloader
 import org.schabi.newpipe.extractor.stream.StreamInfo
 //import com.github.teamnewpipe.newpipe.extractor.NewPipe
 //import com.github.teamnewpipe.newpipe.extractor.services.youtube.YoutubeService
@@ -60,7 +61,8 @@ class MainActivity : ComponentActivity() {
 }
 
 fun initNewPipe() {
-    NewPipe.init(YoutubeService(0))
+    NewPipe.init(DownloaderImpl.init(null))
+    NewPipe.getService(YoutubeService(0))  # Inicializa o service
 }
 
 suspend fun extractTranscription(videoUrl: String): String {
@@ -105,139 +107,6 @@ fun SummaryTubeApp() {
 
     val coroutineScope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Summary-Tube") },
-                navigationIcon = {
-                    IconButton(onClick = { coroutineScope.launch { drawerState.open() } }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
-        ) {
-            // Barra de input (como img-app.png)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextField(
-                    value = link,
-                    onValueChange = { link = it },
-                    label = { Text("Paste a link...") },
-                    modifier = Modifier.weight(1f)
-                )
-                Button(onClick = {
-                    // Cola do clipboard
-                    val clipboard = LocalClipboardManager.current
-                    link = clipboard.getText()?.text ?: ""
-                }) {
-                    Text("Paste")
-                }
-                Spacer(Modifier.width(8.dp))
-                Button(onClick = {
-                    if (link.isNotEmpty() && apiKey.isNotEmpty()) {
-                        // TODO: Na Parte 3, implementar extração/transcrição/resumo aqui
-                        isLoading = true
-                        CoroutineScope(Dispatchers.IO).launch {
-                            try {
-                                val transcription = extractTranscription(link)
-                                val summary = generateSummary(transcription, prompt, model, apiKey)
-                                withContext(Dispatchers.Main) {
-                                    result = summary
-                                    showResult = true
-                                    isLoading = false
-                                }
-                            } catch (e: Exception) {
-                                withContext(Dispatchers.Main) {
-                                    isLoading = false
-                                    Toast.makeText(context, "Erro: ${e.message}", Toast.LENGTH_LONG).show()
-                                }
-                            }
-                        }
-                    } else {
-                        Toast.makeText(context, "Adicione API key e link", Toast.LENGTH_SHORT).show()
-                    }
-                }) {
-                    Text("Send")
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            // Canvas central com animação
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .animateContentSize()
-                    .verticalScroll(rememberScrollState()),
-                contentAlignment = Alignment.Center
-            ) {
-                AnimatedVisibility(
-                    visible = !showResult && !isLoading,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Text("Summary-Tube", style = MaterialTheme.typography.headlineLarge)
-                }
-                AnimatedVisibility(
-                    visible = showResult,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Text(result, modifier = Modifier.padding(16.dp))
-                }
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-            }
-
-            if (showResult) {
-                Row {
-                    val clipboard = LocalClipboardManager.current
-                    Button(onClick = { clipboard.setText(AnnotatedString(result)) }) {
-                        Text("Copy")
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    Button(onClick = {
-                        val intent = Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, result)
-                            setPackage("md.obsidian")// Pacote do Obsidian
-                        }
-                        context.startActivity(Intent.createChooser(intent, "Share to Obsidian"))
-                    }) {
-                        Text("Share to Obsidian")
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-            Button(onClick = {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
-                    val intent = Intent(
-                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:${context.packageName}")
-                    )
-                    context.startActivity(intent)
-                } else {
-                    context.startService(Intent(context, FloatingService::class.java))
-                }
-            }) {
-                Text("Show Floating Widget")
-            }
-        }
-    }
-
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -252,6 +121,140 @@ fun SummaryTubeApp() {
                     prompt = newPrompt
                     prefs.edit().putString("api_key", newKey).putString("model", newModel).putString("prompt", newPrompt).apply()
                 })
+            }
+        },
+        content = {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text("Summary-Tube") },
+                        navigationIcon = {
+                            IconButton(onClick = { coroutineScope.launch { drawerState.open() } }) {
+                                Icon(Icons.Default.Menu, contentDescription = "Menu")
+                            }
+                        }
+                    )
+                }
+            ) { padding ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Top
+                ) {
+                    // Barra de input (como img-app.png)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextField(
+                            value = link,
+                            onValueChange = { link = it },
+                            label = { Text("Paste a link...") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        Button(onClick = {
+                            // Cola do clipboard
+                            val clipboard = LocalClipboardManager.current
+                            link = clipboard.getText()?.text ?: ""
+                        }) {
+                            Text("Paste")
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Button(onClick = {
+                            if (link.isNotEmpty() && apiKey.isNotEmpty()) {
+                                // TODO: Na Parte 3, implementar extração/transcrição/resumo aqui
+                                isLoading = true
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    try {
+                                        val transcription = extractTranscription(link)
+                                        val summary = generateSummary(transcription, prompt, model, apiKey)
+                                        withContext(Dispatchers.Main) {
+                                            result = summary
+                                            showResult = true
+                                            isLoading = false
+                                        }
+                                    } catch (e: Exception) {
+                                        withContext(Dispatchers.Main) {
+                                            isLoading = false
+                                            Toast.makeText(context, "Erro: ${e.message}", Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                                }
+                            } else {
+                                Toast.makeText(context, "Adicione API key e link", Toast.LENGTH_SHORT).show()
+                            }
+                        }) {
+                            Text("Send")
+                        }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    // Canvas central com animação
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .animateContentSize()
+                            .verticalScroll(rememberScrollState()),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AnimatedVisibility(
+                            visible = !showResult && !isLoading,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            Text("Summary-Tube", style = MaterialTheme.typography.headlineLarge)
+                        }
+                        AnimatedVisibility(
+                            visible = showResult,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            Text(result, modifier = Modifier.padding(16.dp))
+                        }
+                        if (isLoading) {
+                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                        }
+                    }
+
+                    if (showResult) {
+                        Row {
+                            val clipboard = LocalClipboardManager.current
+                            Button(onClick = { clipboard.setText(AnnotatedString(result)) }) {
+                                Text("Copy")
+                            }
+                            Spacer(Modifier.width(8.dp))
+                            Button(onClick = {
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, result)
+                                    setPackage("md.obsidian")// Pacote do Obsidian
+                        }
+                                context.startActivity(Intent.createChooser(intent, "Share to Obsidian"))
+                            }) {
+                                Text("Share to Obsidian")
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+                    Button(onClick = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
+                            val intent = Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:${context.packageName}")
+                            )
+                            context.startActivity(intent)
+                        } else {
+                            context.startService(Intent(context, FloatingService::class.java))
+                        }
+                    }) {
+                        Text("Show Floating Widget")
+                    }
+                }
             }
         }
     )
