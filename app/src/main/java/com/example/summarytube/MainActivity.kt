@@ -37,12 +37,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.services.youtube.YoutubeService
-import org.schabi.newpipe.extractor.downloader.Downloader
 import org.schabi.newpipe.extractor.stream.StreamInfo
-//import com.github.teamnewpipe.newpipe.extractor.NewPipe
-//import com.github.teamnewpipe.newpipe.extractor.services.youtube.YoutubeService
-//import com.github.teamnewpipe.newpipe.extractor.downloader.Downloader
-//import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.theokanning.openai.completion.CompletionRequest
 import com.theokanning.openai.service.OpenAiService
 import kotlinx.coroutines.CoroutineScope
@@ -62,7 +57,7 @@ class MainActivity : ComponentActivity() {
 
 fun initNewPipe() {
     NewPipe.init(DownloaderImpl.init(null))
-    NewPipe.getService(YoutubeService(0))  # Inicializa o service
+    NewPipe.getService(YoutubeService(0))
 }
 
 suspend fun extractTranscription(videoUrl: String): String {
@@ -96,7 +91,6 @@ fun SummaryTubeApp() {
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
-    // Estados salvos
     var apiKey by rememberSaveable { mutableStateOf(prefs.getString("api_key", "") ?: "") }
     var model by rememberSaveable { mutableStateOf(prefs.getString("model", "gpt-4.0") ?: "gpt-4.0") }
     var prompt by rememberSaveable { mutableStateOf(prefs.getString("prompt", defaultPrompt) ?: defaultPrompt) }
@@ -144,7 +138,6 @@ fun SummaryTubeApp() {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Top
                 ) {
-                    // Barra de input (como img-app.png)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -156,7 +149,6 @@ fun SummaryTubeApp() {
                             modifier = Modifier.weight(1f)
                         )
                         Button(onClick = {
-                            // Cola do clipboard
                             val clipboard = LocalClipboardManager.current
                             link = clipboard.getText()?.text ?: ""
                         }) {
@@ -165,7 +157,6 @@ fun SummaryTubeApp() {
                         Spacer(Modifier.width(8.dp))
                         Button(onClick = {
                             if (link.isNotEmpty() && apiKey.isNotEmpty()) {
-                                // TODO: Na Parte 3, implementar extração/transcrição/resumo aqui
                                 isLoading = true
                                 CoroutineScope(Dispatchers.IO).launch {
                                     try {
@@ -193,7 +184,6 @@ fun SummaryTubeApp() {
 
                     Spacer(Modifier.height(16.dp))
 
-                    // Canvas central com animação
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -231,8 +221,8 @@ fun SummaryTubeApp() {
                                 val intent = Intent(Intent.ACTION_SEND).apply {
                                     type = "text/plain"
                                     putExtra(Intent.EXTRA_TEXT, result)
-                                    setPackage("md.obsidian")// Pacote do Obsidian
-                        }
+                                    setPackage("md.obsidian")
+                                }
                                 context.startActivity(Intent.createChooser(intent, "Share to Obsidian"))
                             }) {
                                 Text("Share to Obsidian")
@@ -270,12 +260,11 @@ fun SettingsScreen(
     var newApiKey by remember { mutableStateOf(apiKey) }
     var newModel by remember { mutableStateOf(model) }
     var newPrompt by remember { mutableStateOf(prompt) }
-    var showApiKey by remember { mutableStateOf(false) }// Para censurar
+    var showApiKey by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Settings", style = MaterialTheme.typography.headlineMedium)
 
-        // API Key censurada
         TextField(
             value = newApiKey,
             onValueChange = { newApiKey = it },
@@ -288,14 +277,12 @@ fun SettingsScreen(
             }
         )
 
-        // Modelo
         TextField(
             value = newModel,
             onValueChange = { newModel = it },
             label = { Text("Ver:") }
         )
 
-        // Prompt (área grande)
         TextField(
             value = newPrompt,
             onValueChange = { newPrompt = it },
