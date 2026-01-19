@@ -1,8 +1,5 @@
 package com.example.summarytube
 
-import com.example.summarytube.ui.theme.SummaryTubeTheme
-import androidx.compose.ui.res.stringResource // Para ler o @string/app_name
-
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -38,12 +35,13 @@ import androidx.compose.ui.unit.dp
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.services.youtube.YoutubeService
 import org.schabi.newpipe.extractor.stream.StreamInfo
-import com.theokanning.openai.completion.CompletionRequest
 import com.theokanning.openai.service.OpenAiService
+import com.theokanning.openai.completion.CompletionRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.schabi.newpipe.extractor.downloader.Downloader
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
