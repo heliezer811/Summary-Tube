@@ -37,61 +37,62 @@ fun MainScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
+            .background(Color(0xFF0F0F0F))
     ) {
 
-        // 🔹 Título + Menu
+        // 🔹 Top bar mais leve
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 "Summary-Tube",
                 color = Color.White,
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineSmall
             )
 
             Spacer(Modifier.weight(1f))
 
             Icon(
-                Icons.Default.Menu,
-                contentDescription = "Menu",
-                tint = Color.White,
-                modifier = Modifier.clickable {
-                    showSettings = true
-                }
+                imageVector = Icons.Default.Menu,
+                contentDescription = null,
+                tint = Color.White.copy(alpha = 0.8f),
+                modifier = Modifier
+                    .size(22.dp)
+                    .clickable { showSettings = true }
             )
         }
 
-        // 🔹 Canvas central
+        // 🔹 Canvas central (mais espaçamento)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 80.dp, bottom = 120.dp, start = 16.dp, end = 16.dp)
+                .padding(top = 110.dp, bottom = 150.dp, start = 20.dp, end = 20.dp)
                 .background(
                     Color(0xFF2A2A2A),
-                    RoundedCornerShape(24.dp)
+                    RoundedCornerShape(28.dp)
                 )
         ) {
             Text(
                 "Summary-Tube",
-                color = Color.Gray,
+                color = Color.White.copy(alpha = 0.25f),
                 modifier = Modifier.align(Alignment.Center)
             )
         }
 
-        // 🔹 Barra inferior (link)
+        // 🔹 Barra inferior (igual referência)
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(16.dp)
+                .padding(20.dp)
+                .height(64.dp)
                 .background(
                     Color(0xFF3A3A3A),
-                    RoundedCornerShape(32.dp)
+                    RoundedCornerShape(40.dp)
                 )
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(start = 20.dp, end = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -111,19 +112,21 @@ fun MainScreen() {
 
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .background(Color(0xFFD6C6FF), RoundedCornerShape(24.dp)),
+                    .size(44.dp)
+                    .background(Color(0xFFD6C6FF), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text("↑", color = Color.Black)
+                Icon(
+                    imageVector = Icons.Default.ArrowUpward,
+                    contentDescription = null,
+                    tint = Color.Black,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
 
-        // 🔹 Settings lateral (custom)
         if (showSettings) {
-            SettingsPanel(
-                onClose = { showSettings = false }
-            )
+            SettingsPanel { showSettings = false }
         }
     }
 }
