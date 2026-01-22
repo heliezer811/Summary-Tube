@@ -15,49 +15,63 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SettingsPanel(onClose: () -> Unit) {
 
-    Row(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Row(modifier = Modifier.fillMaxSize()) {
 
-        // Espaço vazio (lado direito)
         Spacer(modifier = Modifier.weight(1f))
 
-        // Painel
         Column(
             modifier = Modifier
-                .width(300.dp)
+                .width(280.dp)
                 .fillMaxHeight()
                 .background(
-                    Color(0xFF1E1E1E),
-                    RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp)
+                    Color(0xFF1C1C1C),
+                    RoundedCornerShape(topStart = 32.dp, bottomStart = 32.dp)
                 )
-                .padding(16.dp)
+                .padding(20.dp)
         ) {
-            Text("Settings", color = Color.White)
 
-            Spacer(Modifier.height(16.dp))
-
-            Text("API:", color = Color.Gray)
-            TextField(
-                value = "************",
-                onValueChange = {},
-                enabled = false
+            Text(
+                "Settings",
+                color = Color.White,
+                style = MaterialTheme.typography.headlineSmall
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(20.dp))
+
+            Text("API:", color = Color.Gray)
+
+            Spacer(Modifier.height(8.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .background(Color(0xFF3D3A45), RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Text(
+                    "***************",
+                    color = Color.Gray,
+                    modifier = Modifier.padding(start = 12.dp)
+                )
+            }
+
+            Spacer(Modifier.height(20.dp))
 
             Text("Ver:", color = Color.Gray)
             Text("gpt-4.0", color = Color.White)
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(20.dp))
 
             Text("prompt:", color = Color.Gray)
+
+            Spacer(Modifier.height(8.dp))
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .background(Color.Black, RoundedCornerShape(16.dp))
+                    .background(Color.Black, RoundedCornerShape(20.dp))
             )
         }
     }
