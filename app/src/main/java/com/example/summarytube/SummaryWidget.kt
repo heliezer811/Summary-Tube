@@ -15,6 +15,8 @@ class SummaryWidget : AppWidgetProvider() {
             // Ação do botão Enviar: Inicia o serviço de Overlay passando a URL
             val intent = Intent(context, OverlayService::class.java).apply {
                 action = "SHOW_POPUP"
+                // Aqui passamos o link que está na barra para o Overlay
+                putExtra("VIDEO_URL", "LINK_DO_EDIT_TEXT_AQUI")
             }
             // Nota: Em um widget real, pegar o texto do EditText exige uma Activity de configuração
             // ou o uso de BroadCast. Para simplificar e funcionar como barra de busca:
