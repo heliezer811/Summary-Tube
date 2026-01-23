@@ -1,4 +1,3 @@
-// Local: app/src/main/java/com/summarytube/MainActivity.kt
 package com.summarytube
 
 import android.os.Bundle
