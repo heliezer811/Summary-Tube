@@ -18,8 +18,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Limpar Cache
-        run: ./gradlew clean
+  #    - name: Limpar Cache
+  #      run: ./gradlew clean
 #      - name: Resolver Dependências
 #        run: ./gradlew dependencies --configuration debugCompileClasspath --stacktrace --debug --refresh-dependencies
 
