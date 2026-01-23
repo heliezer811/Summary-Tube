@@ -1,24 +1,23 @@
-package com.example.summarytube
+// Local: app/src/main/java/com/summarytube/MainActivity.kt
+package com.summarytube
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.summarytube.ui.theme.SummaryTubeTheme
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,102 +33,106 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
-    var link by remember { mutableStateOf("") }
-    var showSettings by remember { mutableStateOf(false) }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    var urlText by remember { mutableStateOf("") }
+    var resultText by remember { mutableStateOf("") }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF0F0F0F))
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            SettingsDrawerContent()
+        }
     ) {
-
-        // 🔹 Top bar mais leve
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                "Summary-Tube",
-                color = Color.White,
-                style = MaterialTheme.typography.headlineSmall
-            )
-
-            Spacer(Modifier.weight(1f))
-
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = null,
-                tint = Color.White.copy(alpha = 0.8f),
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Seletor de modelo simulado no topo
+                        Text("Auto", fontSize = 14.sp)
+                        Icon(painterResource(id = R.drawable.ic_arrow_down), null)
+                    } },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(painterResource(id = R.drawable.ic_menu), "Menu")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { /* Histórico */ }) {
+                            Icon(painterResource(id = R.drawable.ic_history), "Histórico")
+                        }
+                        IconButton(onClick = { /* Editar */ }) {
+                            Icon(painterResource(id = R.drawable.ic_edit), "Editar")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black, titleContentColor = Color.White)
+                )
+            },
+            containerColor = Color.Black
+        ) { padding ->
+            Column(
                 modifier = Modifier
-                    .size(22.dp)
-                    .clickable { showSettings = true }
-            )
-        }
-
-        // 🔹 Canvas central (mais espaçamento)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 110.dp, bottom = 150.dp, start = 20.dp, end = 20.dp)
-                .background(
-                    Color(0xFF2A2A2A),
-                    RoundedCornerShape(28.dp)
-                )
-        ) {
-            Text(
-                "Summary-Tube",
-                color = Color.White.copy(alpha = 0.25f),
-                modifier = Modifier.align(Alignment.Center)
-            )
-        }
-
-        // 🔹 Barra inferior (igual referência)
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(20.dp)
-                .height(64.dp)
-                .background(
-                    Color(0xFF3A3A3A),
-                    RoundedCornerShape(40.dp)
-                )
-                .padding(start = 20.dp, end = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            TextField(
-                value = link,
-                onValueChange = { link = it },
-                placeholder = { Text("Paste a link...") },
-                modifier = Modifier.weight(1f),
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                )
-            )
-
-            Spacer(Modifier.width(12.dp))
-
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .background(Color(0xFFD6C6FF), CircleShape),
-                contentAlignment = Alignment.Center
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Icon(
-                    imageVector = Icons.Filled.KeyboardArrowUp,
-                    contentDescription = null,
-                    tint = Color.Black,
-                    modifier = Modifier.size(22.dp)
+                if (resultText.isEmpty()) {
+                    Text(
+                        "Summary-Tube",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.DarkGray
+                    )
+                } else {
+                    // Canvas de resultado (Markdown viewer aqui no futuro)
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                        Text(resultText, color = Color.White)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Barra de Input Inferior
+                InputBar(
+                    value = urlText,
+                    onValueChange = { urlText = it },
+                    onSend = { /* Lógica de extração aqui */ }
                 )
             }
         }
+    }
+}
 
-        if (showSettings) {
-            SettingsPanel { showSettings = false }
+@Composable
+fun InputBar(value: String, onValueChange: (String) -> Unit, onSend: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF1E1E1E), RoundedCornerShape(24.dp))
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = { /* Colar */ }) {
+            Icon(painterResource(id = R.drawable.ic_paste), "Paste", tint = Color.Gray)
+        }
+        TextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text("Paste a link...", color = Color.Gray) },
+            modifier = Modifier.weight(1f),
+            colors = TextFieldDefaults.colors(
+                containerColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent
+            )
+        )
+        IconButton(
+            onClick = onSend,
+            modifier = Modifier.background(Color.DarkGray, RoundedCornerShape(12.dp))
+        ) {
+            Icon(painterResource(id = R.drawable.ic_send), "Send", tint = Color.White)
         }
     }
 }
