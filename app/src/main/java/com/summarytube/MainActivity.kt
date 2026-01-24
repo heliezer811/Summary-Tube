@@ -54,7 +54,12 @@ fun MainScreen() {
 
     ModalNavigationDrawer(
         drawerState = drawerState,
-        drawerContent = { SettingsDrawerContent() }
+        drawerContent = {
+            SettingsDrawerContent(onClose = {
+                scope.launch { drawerState.close() }
+            })
+        }
+            //{ SettingsDrawerContent() }
     ) {
         Scaffold(
             topBar = {
