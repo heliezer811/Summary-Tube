@@ -91,12 +91,32 @@ class OverlayService : Service() {
                             }
 
                             // Botões de Ação
-                            Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                                IconButton(onClick = { /* Lógica de Copiar */ }) {
-                                    Icon(androidx.compose.ui.res.painterResource(R.drawable.ic_copy), null)
+                            // Dentro do Column do Surface no OverlayService.kt
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Botão de Copiar (Apenas ícone)
+                                IconButton(onClick = { copyToClipboard(this@OverlayService, summaryResult) }) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_copy),
+                                        contentDescription = "Copy",
+                                        tint = Color.LightGray,
+                                        modifier = Modifier.size(24.dp)
+                                    )
                                 }
-                                Button(onClick = { /* Lógica Obsidian */ }) {
-                                    Text("Send to Obsidian")
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                // Botão do Obsidian (Ícone com ação de envio)
+                                IconButton(onClick = { shareToObsidian(this@OverlayService, summaryResult) }) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_obsidian),
+                                        contentDescription = "Send to Obsidian",
+                                        tint = Color.Unspecified, // Mantém as cores originais do ícone se for colorido
+                                        modifier = Modifier.size(28.dp)
+                                    )
                                 }
                             }
                         }
