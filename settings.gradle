@@ -10,8 +10,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://jitpack.io") } // Para NewPipeExtractor
+        maven { url 'https://jitpack.io' } // Repositório para o Markdown
     }
 }
-rootProject.name = "SummaryTube"
-include(":app")
+rootProject.name = "Summary-Tube"
+include ':app'
