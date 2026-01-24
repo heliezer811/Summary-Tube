@@ -8,7 +8,7 @@
     <application
         android:theme="@style/Theme.Material3.DayNight"
         android:icon="@drawable/ic_launcher"
-        android:label="Summary-Tube">
+        android:label="Summary-Tube"
         android:allowBackup="true"
         android:supportsRtl="true">
 
