@@ -7,11 +7,15 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -42,22 +46,22 @@ fun MainScreen() {
     var resultText by remember { mutableStateOf("") } // Começa vazio
     var isLoading by remember { mutableStateOf(false) }
 
+    // Animação do Menu (Rotação 90º conforme a aba abre)
+    val rotationAngle by animateFloatAsState(
+        targetValue = if (drawerState.isOpen) 90f else 0f,
+        label = "MenuRotation"
+    )
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = { SettingsDrawerContent() }
     ) {
         Scaffold(
             topBar = {
-                val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-                val rotationAngle by animateFloatAsState(
-                    targetValue = if (drawerState.isOpen) 90f else 0f, // Gira 90 graus para ficar vertical
-                    label = "MenuRotation"
-                )
-
                 TopAppBar(
                     title = { Text("Summary-Tube", color = Color.White) },
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                        IconButton(onClick = { scope.launch { if(drawerState.isClosed) drawerState.open() else drawerState.close() } }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_menu),
                                 contentDescription = "Menu",
@@ -143,39 +147,6 @@ fun MainScreen() {
     }
 }
 
-// No MainActivity.kt, dentro do Scaffold:
-val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-val rotationAngle by animateFloatAsState(
-    targetValue = if (drawerState.isOpen) 90f else 0f, // Gira 90 graus para ficar vertical
-    label = "MenuRotation"
-)
-
-TopAppBar(
-    title = { Text("Summary-Tube", color = Color.White) },
-    navigationIcon = {
-        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_menu),
-                contentDescription = "Menu",
-                tint = Color.White,
-                modifier = Modifier.rotate(rotationAngle) // Aplica a animação de rotação
-            )
-        }
-    },
-    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
-)
-
-// ... No final do Column, a InputBar corrigida:
-InputBar(
-    value = urlText,
-    onValueChange = { urlText = it },
-    onPaste = { 
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        urlText = clipboard.primaryClip?.getItemAt(0)?.text?.toString() ?: ""
-    },
-    onSend = { /* Mesma lógica de envio anterior */ }
-)
-
 // Função Composável da Barra de Entrada
 @Composable
 fun InputBar(value: String, onValueChange: (String) -> Unit, onPaste: () -> Unit, onSend: () -> Unit) {
@@ -194,7 +165,7 @@ fun InputBar(value: String, onValueChange: (String) -> Unit, onPaste: () -> Unit
             onValueChange = onValueChange,
             placeholder = { Text("Paste link...", color = Color.Gray) },
             modifier = Modifier.weight(1f),
-            colors = TextFieldDefaults.colors(containerColor = Color.Transparent)
+            colors = TextFieldDefaults.colors(containerColor = Color.Transparent, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent)
         )
         IconButton(onClick = onSend) {
             Icon(painterResource(id = R.drawable.ic_send), "Send", tint = Color.White)
@@ -210,7 +181,8 @@ fun copyToClipboard(context: Context, text: String) {
 }
 
 fun shareToObsidian(context: Context, content: String) {
-    val uri = Uri.parse("obsidian://new?content=${Uri.encode(content)}")
+    val encodedContent = Uri.encode(content)
+    val uri = Uri.parse("obsidian://new?content=$encodedContent")
     val intent = Intent(Intent.ACTION_VIEW, uri)
     context.startActivity(intent)
 }
