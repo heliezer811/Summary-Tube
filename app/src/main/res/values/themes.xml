@@ -1,6 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.SummaryTube" parent="Theme.Material3.Dark.NoActionBar">
+    <style name="Theme.Material3.Dark" parent="Theme.Material3.Dark.NoActionBar">
         <item name="colorPrimary">@color/purple_dark</item>
         <item name="android:statusBarColor">@color/black</item>
+        <item name="android:navigationBarColor">@color/black</item>
+        <item name="android:windowBackground">@color/black</item>
+        
+        <item name="android:forceDarkAllowed">true</item>
     </style>
 </resources>
