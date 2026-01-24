@@ -91,7 +91,6 @@ class OverlayService : Service() {
                             }
 
                             // Botões de Ação
-                            // Dentro do Column do Surface no OverlayService.kt
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.End,
