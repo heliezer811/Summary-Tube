@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'com.summarytube'
+    namespace "com.summarytube"
     compileSdk 34
 
     defaultConfig {
