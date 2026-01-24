@@ -48,11 +48,22 @@ fun MainScreen() {
     ) {
         Scaffold(
             topBar = {
+                val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+                val rotationAngle by animateFloatAsState(
+                    targetValue = if (drawerState.isOpen) 90f else 0f, // Gira 90 graus para ficar vertical
+                    label = "MenuRotation"
+                )
+
                 TopAppBar(
                     title = { Text("Summary-Tube", color = Color.White) },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(painterResource(id = R.drawable.ic_menu), "Menu", tint = Color.White)
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_menu),
+                                contentDescription = "Menu",
+                                tint = Color.White,
+                                modifier = Modifier.rotate(rotationAngle) // Aplica a animação de rotação
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
@@ -128,6 +139,65 @@ fun MainScreen() {
                     }
                 )
             }
+        }
+    }
+}
+
+// No MainActivity.kt, dentro do Scaffold:
+val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+val rotationAngle by animateFloatAsState(
+    targetValue = if (drawerState.isOpen) 90f else 0f, // Gira 90 graus para ficar vertical
+    label = "MenuRotation"
+)
+
+TopAppBar(
+    title = { Text("Summary-Tube", color = Color.White) },
+    navigationIcon = {
+        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_menu),
+                contentDescription = "Menu",
+                tint = Color.White,
+                modifier = Modifier.rotate(rotationAngle) // Aplica a animação de rotação
+            )
+        }
+    },
+    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
+)
+
+// ... No final do Column, a InputBar corrigida:
+InputBar(
+    value = urlText,
+    onValueChange = { urlText = it },
+    onPaste = { 
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        urlText = clipboard.primaryClip?.getItemAt(0)?.text?.toString() ?: ""
+    },
+    onSend = { /* Mesma lógica de envio anterior */ }
+)
+
+// Função Composável da Barra de Entrada
+@Composable
+fun InputBar(value: String, onValueChange: (String) -> Unit, onPaste: () -> Unit, onSend: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF1E1E1E), RoundedCornerShape(30.dp))
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onPaste) {
+            Icon(painterResource(id = R.drawable.ic_paste), "Paste", tint = Color.Gray)
+        }
+        TextField(
+            value = value,
+            onValueChange = onValueChange,
+            placeholder = { Text("Paste link...", color = Color.Gray) },
+            modifier = Modifier.weight(1f),
+            colors = TextFieldDefaults.colors(containerColor = Color.Transparent)
+        )
+        IconButton(onClick = onSend) {
+            Icon(painterResource(id = R.drawable.ic_send), "Send", tint = Color.White)
         }
     }
 }
