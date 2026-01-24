@@ -21,7 +21,7 @@ class SummaryWidget : AppWidgetProvider() {
             // Nota: Em um widget real, pegar o texto do EditText exige uma Activity de configuração
             // ou o uso de BroadCast. Para simplificar e funcionar como barra de busca:
             val pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-            views.setOnClickPendingIntent(R.id.btn_send_widget, pendingIntent)
+            views.setOnClickPendingIntent(R.id.btn_widget_send, pendingIntent)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
