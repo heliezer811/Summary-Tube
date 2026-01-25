@@ -15,20 +15,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.lifecycle.setViewTreeViewModelStoreOwner
-import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import androidx.lifecycle.*
+//import androidx.lifecycle.setViewTreeLifecycleOwner
+//import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.savedstate.*
 import dev.jeziellago.compose.markdown.MarkdownText
 import kotlinx.coroutines.launch
 
-class OverlayService : Service() {
+class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
     private lateinit var windowManager: WindowManager
     private var composeView: ComposeView? = null
 
+    // Implementações obrigatórias para o Compose no Service
+    private val lifecycleRegistry = LifecycleRegistry(this)
+    override val lifecycle: Lifecycle = lifecycleRegistry
+    override val viewModelStore = ViewModelStore()
+    private val savedStateRegistryController = SavedStateRegistryController.create(this)
+    override val savedStateRegistry = savedStateRegistryController.savedStateRegistry
+
+    override fun onCreate() {
+        super.onCreate()
+        savedStateRegistryController.performRestore(null)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    }
+
     // Aqui recebemos o link vindo do Widget
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val videoUrl = intent?.getStringExtra("VIDEO_URL") ?: ""
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+        val videoUrl = intent?.getStringExtra(\"VIDEO_URL\") ?: \"\"
         showCanvas(videoUrl)
         return START_NOT_STICKY
     }
@@ -42,9 +56,9 @@ class OverlayService : Service() {
             //lifecycleOwner.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
             //setViewTreeLifecycleOwner(lifecycleOwner)
             //setViewTreeSavedStateRegistryOwner(lifecycleOwner)
-            setViewTreeLifecycleOwner(lifecycleOwner)
-            setViewTreeViewModelStoreOwner(viewModelStoreOwner)
-            setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
+            setViewTreeLifecycleOwner(this@OverlayService)
+            setViewTreeViewModelStoreOwner(this@OverlayService)
+            setViewTreeSavedStateRegistryOwner(this@OverlayService)
 
             setContent {
                 var visible by remember { mutableStateOf(false) }
@@ -150,6 +164,7 @@ class OverlayService : Service() {
     }
 
     override fun onDestroy() {
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         super.onDestroy()
         composeView?.let { windowManager.removeView(it) }
     }
