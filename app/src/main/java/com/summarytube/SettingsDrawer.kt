@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -129,7 +130,8 @@ fun CustomTextField(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = TextFieldDefaults.colors(
-            containerColor = Color(0xFF1E1E1E),
+            focusedContainerColor = Color(0xFF1E1E1E),
+            unfocusedContainerColor = Color(0xFF1E1E1E),
             focusedTextColor = Color.White,
             unfocusedTextColor = Color.White,
             focusedIndicatorColor = Color.Transparent,
