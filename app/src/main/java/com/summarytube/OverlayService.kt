@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import dev.jeziellago.compose.markdown.MarkdownText
 import kotlinx.coroutines.launch
@@ -36,10 +38,13 @@ class OverlayService : Service() {
         val prefs = Prefs(this) // Carrega sua API Key e Prompt salvos
         
         composeView = ComposeView(this).apply {
-            val lifecycleOwner = MyLifecycleOwner()
-            lifecycleOwner.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+            //val lifecycleOwner = MyLifecycleOwner()
+            //lifecycleOwner.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+            //setViewTreeLifecycleOwner(lifecycleOwner)
+            //setViewTreeSavedStateRegistryOwner(lifecycleOwner)
             setViewTreeLifecycleOwner(lifecycleOwner)
-            setViewTreeSavedStateRegistryOwner(lifecycleOwner)
+            setViewTreeViewModelStoreOwner(viewModelStoreOwner)
+            setViewTreeSavedStateRegistryOwner(savedStateRegistryOwner)
 
             setContent {
                 var visible by remember { mutableStateOf(false) }
