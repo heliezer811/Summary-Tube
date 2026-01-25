@@ -166,7 +166,9 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
     override fun onDestroy() {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         super.onDestroy()
-        composeView?.let { windowManager.removeView(it) }
+        composeView?.let { 
+            if (it.isAttachedToWindow) windowManager.removeView(it)
+        }
     }
 
     override fun onBind(intent: Intent?) = null
