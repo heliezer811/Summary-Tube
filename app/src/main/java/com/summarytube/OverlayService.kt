@@ -16,9 +16,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.*
-//import androidx.lifecycle.setViewTreeLifecycleOwner
-//import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.*
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import dev.jeziellago.compose.markdown.MarkdownText
 import kotlinx.coroutines.launch
 
@@ -42,7 +43,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
     // Aqui recebemos o link vindo do Widget
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-        val videoUrl = intent?.getStringExtra(\"VIDEO_URL\") ?: \"\"
+        val videoUrl = intent?.getStringExtra("VIDEO_URL") ?: ""
         showCanvas(videoUrl)
         return START_NOT_STICKY
     }
