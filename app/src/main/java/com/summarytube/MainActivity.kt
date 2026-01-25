@@ -171,8 +171,8 @@ fun InputBar(value: String, onValueChange: (String) -> Unit, onPaste: () -> Unit
             placeholder = { Text("Paste link...", color = Color.Gray) },
             modifier = Modifier.weight(1f),
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFF1E1E1E),
-                unfocusedContainerColor = Color(0xFF1E1E1E),
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent, 
                 unfocusedIndicatorColor = Color.Transparent, 
                 focusedTextColor = Color.White,
