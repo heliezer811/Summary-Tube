@@ -1,4 +1,5 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/xml/ns/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="60dp"
     android:background="@drawable/widget_shape"
@@ -18,7 +19,8 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:src="@drawable/ic_paste"
-        android:background="?android:attr/selectableItemBackgroundBorderless" />
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Paste Link" />
     
     <EditText
         android:id="@+id/et_widget_link"
@@ -29,12 +31,14 @@
         android:textColorHint="#808080"
         android:background="@null"
         android:paddingStart="10dp"
-        android:textColor="#FFFFFF" />
+        android:textColor="#FFFFFF"
+        android:inputType="textUri" />
 
     <ImageButton
         android:id="@+id/btn_widget_send"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:src="@drawable/ic_send"
-        android:background="?android:attr/selectableItemBackgroundBorderless" />
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Send Link" />
 </LinearLayout>
