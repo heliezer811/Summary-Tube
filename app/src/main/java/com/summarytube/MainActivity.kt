@@ -170,7 +170,14 @@ fun InputBar(value: String, onValueChange: (String) -> Unit, onPaste: () -> Unit
             onValueChange = onValueChange,
             placeholder = { Text("Paste link...", color = Color.Gray) },
             modifier = Modifier.weight(1f),
-            colors = TextFieldDefaults.colors(containerColor = Color.Transparent, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent)
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color(0xFF1E1E1E),
+                unfocusedContainerColor = Color(0xFF1E1E1E),
+                focusedIndicatorColor = Color.Transparent, 
+                unfocusedIndicatorColor = Color.Transparent, 
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White
+            )
         )
         IconButton(onClick = onSend) {
             Icon(painterResource(id = R.drawable.ic_send), "Send", tint = Color.White)
