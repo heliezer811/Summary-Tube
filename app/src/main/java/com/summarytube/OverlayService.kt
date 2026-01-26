@@ -16,10 +16,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.*
-import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.lifecycle.setViewTreeViewModelStoreOwner
+//import androidx.lifecycle.setViewTreeLifecycleOwner
+//import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.*
-import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+//import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import dev.jeziellago.compose.markdown.MarkdownText
 import kotlinx.coroutines.launch
 
