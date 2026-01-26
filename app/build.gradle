@@ -41,11 +41,11 @@ android {
     }
 }
 
-repositories {
-    google()
-    mavenCentral()
-    maven { url 'https://jitpack.io' }
-}
+//repositories {
+//    google()
+//    mavenCentral()
+//    maven { url 'https://jitpack.io' }
+//}
 
 dependencies {
     // Core e UI
