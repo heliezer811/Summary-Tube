@@ -6,11 +6,11 @@ pluginManagement {
     }
 }
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' } // Repositório para o Markdown
+        // maven { url 'https://jitpack.io' } // Repositório para o Markdown
     }
 }
 rootProject.name = "Summary-Tube"
