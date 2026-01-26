@@ -59,7 +59,7 @@ dependencies {
     implementation "androidx.savedstate:savedstate-ktx:1.2.1"
 
     // Markdown para exibir o resumo formatado
-    implementation "com.github.jeziellago:compose-markdown:0.5.0"
+    implementation 'com.github.jeziellago:compose-markdown:0.5.0'
     
     // Networking (OkHttp) e Processamento de JSON (Gson)
     implementation "com.squareup.okhttp3:okhttp:4.12.0"
