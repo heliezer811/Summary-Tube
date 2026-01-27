@@ -82,6 +82,8 @@ dependencies {
     //implementation files('libs/compose-markdown-0.5.8.aar')
     implementation(name: 'compose-markdown-0.5.8', ext: 'aar')
 
+    implementation "io.coil-kt:coil-compose:2.7.0"
+
     // Testes
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
