@@ -7,10 +7,13 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)//FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
+        flatDir {
+            dirs "$rootDir/app/libs"  // ← Adicione aqui o flatDir, apontando para app/libs
+        }
         //maven { url 'https://jitpack.io' }
     }
 }
