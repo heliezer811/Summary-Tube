@@ -117,7 +117,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
 
                             // Área do Markdown (Onde o resumo aparece)
                             Box(modifier = Modifier.weight(1f).padding(vertical = 16.dp)) {
-                                MarkdownText(markdown = summaryResult, style = TextStyle(color = Color.White)//color = Color.White)
+                                MarkdownText(markdown = summaryResult, style = TextStyle(color = Color.White))//color = Color.White)
                             }
 
                             // Botões de Ação
