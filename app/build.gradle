@@ -41,14 +41,14 @@ android {
     }
 }
 
-repositories {
-    flatDir {
-        dirs 'libs'  // aponta para a pasta app/libs/
-    }
-    google()
-    mavenCentral()
+//repositories {
+//    flatDir {
+//        dirs 'libs'  // aponta para a pasta app/libs/
+//    }
+//    google()
+//    mavenCentral()
     //maven { url 'https://jitpack.io' }
-}
+//}
 
 dependencies {
     // Core e UI
