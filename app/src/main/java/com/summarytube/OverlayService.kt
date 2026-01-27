@@ -20,7 +20,7 @@ import androidx.lifecycle.*
 //import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.*
 //import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import dev.jeziellago.compose.markdown.MarkdownText
+import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlinx.coroutines.launch
 
 class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
