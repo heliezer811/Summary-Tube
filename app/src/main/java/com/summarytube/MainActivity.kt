@@ -157,21 +157,23 @@ fun MainScreen() {
 // Função Composável da Barra de Entrada
 @Composable
 fun InputBar(value: String, onValueChange: (String) -> Unit, onPaste: () -> Unit, onSend: () -> Unit) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
+            .height(120.dp) // Mais comprida verticalmente
             .background(Color(0xFF1E1E1E), RoundedCornerShape(30.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(12.dp)//(horizontal = 8.dp, vertical = 4.dp),
+        //verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = onPaste) {
-            Icon(painterResource(id = R.drawable.ic_paste), "Paste", tint = Color.Gray)
-        }
+        //IconButton(onClick = onPaste) {
+        //    Icon(painterResource(id = R.drawable.ic_paste), "Paste", tint = Color.Gray)
+        //}
+        // Parte Superior: Campo de Texto
         TextField(
             value = value,
             onValueChange = onValueChange,
             placeholder = { Text("Paste link...", color = Color.Gray) },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).fillMaxWidth(),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
@@ -181,11 +183,39 @@ fun InputBar(value: String, onValueChange: (String) -> Unit, onPaste: () -> Unit
                 unfocusedTextColor = Color.White
             )
         )
-        IconButton(onClick = onSend) {
-            Icon(painterResource(id = R.drawable.ic_send), "Send", tint = Color.White)
+
+        // Parte Inferior: Ícones
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onPaste, modifier = Modifier.size(48.dp)) { // Ícone maior
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_paste), 
+                    contentDescription = "Paste", 
+                    tint = Color.Gray,
+                    modifier = Modifier.size(28.dp) // Tamanho do desenho interno
+                )
+            }
+            
+            IconButton(onClick = onSend, modifier = Modifier.size(48.dp)) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_send), 
+                    contentDescription = "Send", 
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
         }
     }
 }
+
+//        IconButton(onClick = onSend) {
+//            Icon(painterResource(id = R.drawable.ic_send), "Send", tint = Color.White)
+//        }
+//    }
+//}
 
 // Funções Auxiliares de Compartilhamento
 fun copyToClipboard(context: Context, text: String) {
