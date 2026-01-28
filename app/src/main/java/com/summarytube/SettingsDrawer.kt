@@ -27,6 +27,7 @@ fun SettingsDrawerContent(onClose: () -> Unit) {
     var prompt by remember { mutableStateOf(prefs.customPrompt) }
     var selectedModel by remember { mutableStateOf(prefs.selectedModel) }
 
+    // Estado para o Dropdown
     val models = listOf("gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo")
     var expanded by remember { mutableStateOf(false) }
 
@@ -40,17 +41,17 @@ fun SettingsDrawerContent(onClose: () -> Unit) {
             )
             .padding(24.dp)
     ) {
-        // Cabeçalho com Título e Botão Fechar
+        // Cabeçalho com Título
         Text(
-            "Settings", 
+            text = "Settings",
             fontSize = 26.sp, 
             color = Color.White, 
-            fontWeight = FontWeight.Bold
-
-        Spacer(modifier = Modifier.height(32.dp))
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 32.dp)
+        )
         
         // --- API Key ---
-        SettingLabel("API Key")
+        SettingLabel("API Key:")
         CustomTextField(
             value = apiKey,
             onValueChange = { 
@@ -63,32 +64,17 @@ fun SettingsDrawerContent(onClose: () -> Unit) {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // --- Model ---
-        SettingLabel("Model")
-        CustomTextField(
-            value = selectedModel,
-            onValueChange = { 
-                selectedModel = it
-                prefs.selectedModel = it 
-            },
-            placeholder = "gpt-4o / gpt-3.5-turbo"
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // ... Campo API Key ...
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         // SELEÇÃO DE MODELO (Dropdown)
-        Text("Model:", color = Color.Gray, fontSize = 14.sp)
-        Box {
+        SettingLabel("Model:")
+        Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(
                 onClick = { expanded = true },
                 modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                border = null // Remove borda padrão
             ) {
-                Text(selectedModel)
+                Text(selectedModel, color = Color.White)
             }
             DropdownMenu(
                 expanded = expanded,
@@ -108,8 +94,10 @@ fun SettingsDrawerContent(onClose: () -> Unit) {
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
         // --- Custom Prompt ---
-        SettingLabel("Custom Prompt")
+        SettingLabel("Custom Prompt:")
         CustomTextField(
             value = prompt,
             onValueChange = { 
