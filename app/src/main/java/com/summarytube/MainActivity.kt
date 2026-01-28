@@ -156,7 +156,7 @@ fun MainScreen() {
 
 // Função Composável da Barra de Entrada
 @Composable
-fun InputBar(value: String, onValueChange: (String) -> Unit, onPaste: () -> Unit, onSend: () -> Unit) {
+fun LinkInputField(value: String, onValueChange: (String) -> Unit, onPaste: () -> Unit, onSend: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
