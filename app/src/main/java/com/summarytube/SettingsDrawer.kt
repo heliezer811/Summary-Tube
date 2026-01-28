@@ -27,34 +27,25 @@ fun SettingsDrawerContent(onClose: () -> Unit) {
     var prompt by remember { mutableStateOf(prefs.customPrompt) }
     var selectedModel by remember { mutableStateOf(prefs.selectedModel) }
 
+    val models = listOf("gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo")
+    var expanded by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxHeight()
             .width(320.dp)
-            .background(Color(0xFF121212)) // Fundo escuro conforme img-settings
+            .background(
+                Color(0xFF121212), // Fundo escuro
+                RoundedCornerShape(topEnd = 32.dp, bottomEnd = 32.dp) // ARREDONDAR BORDAS DIREITAS
+            )
             .padding(24.dp)
     ) {
         // Cabeçalho com Título e Botão Fechar
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                "Settings", 
-                fontSize = 26.sp, 
-                color = Color.White, 
-                fontWeight = FontWeight.Bold
-            )
-            IconButton(onClick = onClose) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_close),
-                    contentDescription = "Close",
-                    tint = Color.Gray,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
+        Text(
+            "Settings", 
+            fontSize = 26.sp, 
+            color = Color.White, 
+            fontWeight = FontWeight.Bold
 
         Spacer(modifier = Modifier.height(32.dp))
         
@@ -84,6 +75,38 @@ fun SettingsDrawerContent(onClose: () -> Unit) {
         )
 
         Spacer(modifier = Modifier.height(20.dp))
+
+        // ... Campo API Key ...
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // SELEÇÃO DE MODELO (Dropdown)
+        Text("Model:", color = Color.Gray, fontSize = 14.sp)
+        Box {
+            OutlinedButton(
+                onClick = { expanded = true },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+            ) {
+                Text(selectedModel)
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.background(Color(0xFF1E1E1E))
+            ) {
+                models.forEach { model ->
+                    DropdownMenuItem(
+                        text = { Text(model, color = Color.White) },
+                        onClick = {
+                            selectedModel = model
+                            prefs.selectedModel = model
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
 
         // --- Custom Prompt ---
         SettingLabel("Custom Prompt")
