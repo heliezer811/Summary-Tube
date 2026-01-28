@@ -21,18 +21,6 @@
         android:src="@drawable/ic_paste"
         android:background="?android:attr/selectableItemBackgroundBorderless"
         android:contentDescription="Paste Link" />
-    
-    <EditText
-        android:id="@+id/et_widget_link"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:hint="Paste a link..."
-        android:textColorHint="#808080"
-        android:background="@null"
-        android:paddingStart="10dp"
-        android:textColor="#FFFFFF"
-        android:inputType="textUri" />
 
     <ImageButton
         android:id="@+id/btn_widget_send"
