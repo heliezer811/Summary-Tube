@@ -43,20 +43,78 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
 
     // Aqui recebemos o link vindo do Widget
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == "ACTION_START_FROM_WIDGET") {
-            val clipboardLink = getLinkFromClipboard()
-            if (clipboardLink.contains("youtube.com") || clipboardLink.contains("youtu.be")) {
-                showCanvas(clipboardLink)
-            } else {
-                // Se não houver link válido no clipboard, abre o canvas vazio ou mostra erro
-                showCanvas("") 
+        val action = intent?.action
+    
+        // Captura a posição do widget na tela (se disponível)
+        val bounds = intent?.sourceBounds
+        val yOffset = bounds?.top ?: 100 // Posição vertical do widget
+
+        when (action) {
+            "ACTION_OPEN_INPUT" -> showInputOverlay(yOffset)
+            "ACTION_PASTE_AND_SUMMARY" -> {
+                val link = getLinkFromClipboard()
+                showSummaryOverlay(link)
             }
-        } else {
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-            val videoUrl = intent?.getStringExtra("VIDEO_URL") ?: ""
-            showCanvas(videoUrl)
+            else -> {
+                val url = intent?.getStringExtra("VIDEO_URL") ?: ""
+                showSummaryOverlay(url)
+            }
         }
         return START_NOT_STICKY
+    }
+
+    // MODO 1: Barra de Digitação (Estilo Google Search)
+    private fun showInputOverlay(yPos: Int) {
+        val params = createLayoutParams(yPos)
+        params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL // LIBERA O TECLADO
+    
+        val composeView = ComposeView(this).apply {
+            // Configure o LifecycleOwner aqui como você já fez no seu código...
+            setContent {
+                var text by remember { mutableStateOf("") }
+                val focusRequester = remember { FocusRequester() }
+
+                LaunchedEffect(Unit) { focusRequester.requestFocus() } // Abre teclado
+
+                Box(modifier = Modifier.fillMaxSize().clickable { stopSelf() }) { // Fecha se clicar fora
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .height(60.dp)
+                            .focusRequester(focusRequester),
+                        color = Color(0xFF1E1E1E),
+                        shape = RoundedCornerShape(30.dp)
+                    ) {
+                        TextField(
+                            value = text,
+                            onValueChange = { text = it },
+                            placeholder = { Text("Type or paste link...") },
+                            modifier = Modifier.fillMaxSize(),
+                            trailingIcon = {
+                                IconButton(onClick = { showSummaryOverlay(text) }) {
+                                    Icon(painterResource(id = R.drawable.ic_send), null, tint = Color.White)
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+        windowManager.addView(composeView, params)
+    }
+    // Helper para criar os parâmetros de posição
+    private fun createLayoutParams(yPos: Int): WindowManager.LayoutParams {
+        return WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            0,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.TOP
+            y = yPos // Posiciona exatamente na altura do widget
+        }
     }
 
     private fun getLinkFromClipboard(): String {
