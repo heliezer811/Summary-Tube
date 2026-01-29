@@ -14,6 +14,15 @@
         android:src="@drawable/ic_widget"
         android:layout_marginStart="8dp" />
 
+    <TextView
+        android:id="@+id/tv_widget_placeholder"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Paste a link..."
+        android:textColor="#808080"
+        android:paddingStart="10dp" />
+
     <ImageButton
         android:id="@+id/btn_widget_paste"
         android:layout_width="40dp"
