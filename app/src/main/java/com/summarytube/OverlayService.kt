@@ -43,12 +43,32 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
 
     // Aqui recebemos o link vindo do Widget
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-        val videoUrl = intent?.getStringExtra("VIDEO_URL") ?: ""
-        showCanvas(videoUrl)
+        if (intent?.action == "ACTION_START_FROM_WIDGET") {
+            val clipboardLink = getLinkFromClipboard()
+            if (clipboardLink.contains("youtube.com") || clipboardLink.contains("youtu.be")) {
+                showCanvas(clipboardLink)
+            } else {
+                // Se não houver link válido no clipboard, abre o canvas vazio ou mostra erro
+                showCanvas("") 
+            }
+        } else {
+            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+            val videoUrl = intent?.getStringExtra("VIDEO_URL") ?: ""
+            showCanvas(videoUrl)
+        }
         return START_NOT_STICKY
     }
 
+    private fun getLinkFromClipboard(): String {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        val clipData = clipboard.primaryClip
+        if (clipData != null && clipData.itemCount > 0) {
+            val item = clipData.getItemAt(0)
+            return item.text?.toString() ?: ""
+        }
+        return ""
+    }
+    
     private fun showCanvas(videoUrl: String) {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         val prefs = Prefs(this) // Carrega sua API Key e Prompt salvos
