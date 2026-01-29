@@ -12,6 +12,22 @@ class SummaryWidget : AppWidgetProvider() {
         for (appWidgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.widget_layout)
 
+            // 1. Ação para abrir o INPUT (Clicar na barra ou logo)
+            val inputIntent = Intent(context, OverlayService::class.java).apply {
+                action = "ACTION_OPEN_INPUT"
+            }
+            val pInput = PendingIntent.getService(context, 1, inputIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            views.setOnClickPendingIntent(R.id.widget_main_container, pInput)
+            views.setOnClickPendingIntent(R.id.iv_widget_logo, pInput)
+
+            // 2. Ação para PASTE
+            val pasteIntent = Intent(context, OverlayService::class.java).apply {
+                action = "ACTION_PASTE_AND_SUMMARY"
+            }
+            val pPaste = PendingIntent.getService(context, 2, pasteIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            views.setOnClickPendingIntent(R.id.btn_widget_paste, pPaste)
+            //views.setOnClickPendingIntent(R.id.btn_widget_send, pPaste)
+
             // Ação do botão Enviar: Inicia o serviço de Overlay passando a URL
             val intent = Intent(context, OverlayService::class.java).apply {
                 action = "ACTION_START_FROM_WIDGET"
@@ -22,12 +38,6 @@ class SummaryWidget : AppWidgetProvider() {
             // ou o uso de BroadCast. Para simplificar e funcionar como barra de busca:
             val pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
             views.setOnClickPendingIntent(R.id.btn_widget_send, pendingIntent)
-
-            // Configuramos o clique no botão de enviar (ou na logo) do widget
-            views.setOnClickPendingIntent(R.id.btn_widget_send, pendingIntent)
-            
-            // Opcional: fazer o ícone de "paste" também abrir o serviço
-            views.setOnClickPendingIntent(R.id.btn_widget_paste, pendingIntent)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
