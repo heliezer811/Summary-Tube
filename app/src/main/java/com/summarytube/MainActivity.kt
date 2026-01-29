@@ -44,7 +44,8 @@ fun MainScreen() {
     val prefs = remember { Prefs(context) }
     
     var urlText by remember { mutableStateOf("") }
-    var resultText by remember { mutableStateOf("") } // Começa vazio
+    //var resultText by remember { mutableStateOf("") } // Começa vazio
+    var summaryResult by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
     // Animação do Menu (Rotação 90º conforme a aba abre)
@@ -85,28 +86,32 @@ fun MainScreen() {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(16.dp),
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // ÁREA DO CANVAS (Onde o texto aparece)
                 Box(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    //contentAlignment = Alignment.Center
                 ) {
-                    if (resultText.isEmpty() && !isLoading) {
+                    if (summaryResult.isEmpty() && !isLoading) {
                         // Texto que aparece no meio do canvas (img-app.png)
                         Text(
                             "Summary-Tube",
                             fontSize = 38.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Color(0xFF2A2A2A)
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.align(Alignment.Center)
                         )
                     } else {
                         // Resultado com Markdown e botões de ação
-                        Column {
-                            Box(modifier = Modifier.weight(1f)) {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            Box(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                                 MarkdownText(
-                                    markdown = if (isLoading) "Processando vídeo..." else resultText,
+                                    markdown = if (isLoading) "Processando vídeo..." else summaryResult,
                                     style = TextStyle(color = Color.White)
                                     //color = Color.White
                                 )
@@ -114,10 +119,10 @@ fun MainScreen() {
                             
                             if (!isLoading) {
                                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                                    IconButton(onClick = { copyToClipboard(context, resultText) }) {
+                                    IconButton(onClick = { copyToClipboard(context, summaryResult) }) {
                                         Icon(painterResource(id = R.drawable.ic_copy), null, tint = Color.Gray)
                                     }
-                                    IconButton(onClick = { shareToObsidian(context, resultText) }) {
+                                    IconButton(onClick = { shareToObsidian(context, summaryResult) }) {
                                         Icon(painterResource(id = R.drawable.ic_obsidian), null, tint = Color.Unspecified)
                                     }
                                 }
@@ -129,7 +134,7 @@ fun MainScreen() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // BARRA DE INPUT (Igual ao Widget)
-                InputBar(
+                LinkInputField(
                     value = urlText,
                     onValueChange = { urlText = it },
                     onPaste = { 
@@ -141,7 +146,7 @@ fun MainScreen() {
                             isLoading = true
                             scope.launch {
                                 val transcript = YouTubeTranscriptHelper.fetchTranscript(urlText)
-                                resultText = OpenAIService.generateSummary(
+                                summaryResult = OpenAIService.generateSummary(
                                     transcript, prefs.customPrompt, prefs.apiKey, prefs.selectedModel
                                 )
                                 isLoading = false
