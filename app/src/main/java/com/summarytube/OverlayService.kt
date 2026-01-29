@@ -86,9 +86,13 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
                 var visible by remember { mutableStateOf(false) }
                 var summaryResult by remember { mutableStateOf("Iniciando processamento...") }
                 val scope = rememberCoroutineScope()
+                val focusRequester = remember { FocusRequester() }
 
                 // Efeito que dispara assim que o Canvas aparece
                 LaunchedEffect(Unit) {
+                    if (urlFromWidget.isNotEmpty()) {
+                        focusRequester.requestFocus() // Abre o teclado automaticamente
+                    }
                     visible = true
                     scope.launch {
                         summaryResult = "Extraindo transcrição do YouTube..."
@@ -107,6 +111,12 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
                         }
                     }
                 }
+
+                TextField(
+                    value = text,
+                    onValueChange = { ... },
+                    modifier = Modifier.focusRequester(focusRequester)
+                )
 
                 // O visual do Canvas (Popup)
                 AnimatedVisibility(
