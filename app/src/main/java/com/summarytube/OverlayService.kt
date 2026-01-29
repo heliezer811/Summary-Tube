@@ -176,11 +176,12 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT, // Altura ajustável
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_DIM_BEHIND,//Escurece fundo atraz do overlay
+            //WindowManager.LayoutParams.FLAG_DIM_BEHIND,//Escurece fundo atraz do overlay
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, // Permite que o teclado apareça!
             PixelFormat.TRANSLUCENT
-        ).apply { dimAmount = 0.5f; gravity = Gravity.CENTER }
+        ).apply { dimAmount = 0.5f; gravity = Gravity.TOP }
 
         windowManager.addView(composeView, params)
     }
