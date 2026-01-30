@@ -83,7 +83,7 @@ fun SettingsDrawerContent(onClose: () -> Unit) {
                 //border = null // Remove borda padrão
         ) {
             Text(selectedModel, color = Color.White)
-            }
+
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
@@ -102,7 +102,7 @@ fun SettingsDrawerContent(onClose: () -> Unit) {
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         // --- Custom Prompt ---
         SettingLabel("Custom Prompt:")
@@ -113,7 +113,7 @@ fun SettingsDrawerContent(onClose: () -> Unit) {
                 prefs.customPrompt = it 
             },
             placeholder = "Ex: Resuma este vídeo em tópicos...",
-            modifier = Modifier.weight(1f), // Ocupa o espaço restante
+            modifier = Modifier.weight(1f), // Faz o campo crescer para preencher o espaço
             singleLine = false
         )
     }
