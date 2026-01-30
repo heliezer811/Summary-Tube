@@ -24,10 +24,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.TextStyle
 import androidx.lifecycle.*
-import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.lifecycle.setViewTreeViewModelStoreOwner
+//import androidx.lifecycle.setViewTreeLifecycleOwner
+//import androidx.lifecycle.setViewTreeViewModelStoreOwner
+//import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.savedstate.*
-import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+//import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlinx.coroutines.launch
 import android.net.Uri
@@ -163,24 +164,32 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
     }
     
     private fun showSummaryOverlay(videoUrl: String) {
+        // 1. Remove overlay anterior se existir
         if (composeView != null) {
-            windowManager.removeView(composeView)
+            try {
+                windowManager.removeView(composeView)
+            } catch (e: Exception) { }
             composeView = null
         }
-        //windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        //val prefs = Prefs(this) // Carrega sua API Key e Prompt salvos
-        
+
+        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+
+        // 2. Inicializa Preferências (Resolvendo o erro de Unresolved Reference)
+        val prefs = Prefs(this)
+
+        // 3. Cria a View do Compose
         composeView = ComposeView(this).apply {
             //val lifecycleOwner = MyLifecycleOwner()
             //lifecycleOwner.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
             //setViewTreeLifecycleOwner(lifecycleOwner)
             //setViewTreeSavedStateRegistryOwner(lifecycleOwner)
-            
-            //setViewTreeLifecycleOwner(this@OverlayService)
-            //setViewTreeViewModelStoreOwner(this@OverlayService)
-            //setViewTreeSavedStateRegistryOwner(this@OverlayService)
 
-            setupServiceLifecycle()
+            // Vincula os owners necessários para o Compose funcionar fora de uma Activity
+            setViewTreeLifecycleOwner(this@OverlayService)
+            setViewTreeViewModelStoreOwner(this@OverlayService)
+            setViewTreeSavedStateRegistryOwner(this@OverlayService)
+
+            //setupServiceLifecycle()
 
             setContent {
                 var visible by remember { mutableStateOf(false) }
