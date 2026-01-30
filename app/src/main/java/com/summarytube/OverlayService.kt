@@ -145,7 +145,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
             }
         }
         
-        setupServiceLifecycle()
+        //setupServiceLifecycle()
 
         // Helper para criar os parâmetros de posição
         val params = WindowManager.LayoutParams(
@@ -163,29 +163,36 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
     }
     
     private fun showSummaryOverlay(videoUrl: String) {
-        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        val prefs = Prefs(this) // Carrega sua API Key e Prompt salvos
+        if (composeView != null) {
+            windowManager.removeView(composeView)
+            composeView = null
+        }
+        //windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        //val prefs = Prefs(this) // Carrega sua API Key e Prompt salvos
         
         composeView = ComposeView(this).apply {
             //val lifecycleOwner = MyLifecycleOwner()
             //lifecycleOwner.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
             //setViewTreeLifecycleOwner(lifecycleOwner)
             //setViewTreeSavedStateRegistryOwner(lifecycleOwner)
-            setViewTreeLifecycleOwner(this@OverlayService)
-            setViewTreeViewModelStoreOwner(this@OverlayService)
-            setViewTreeSavedStateRegistryOwner(this@OverlayService)
+            
+            //setViewTreeLifecycleOwner(this@OverlayService)
+            //setViewTreeViewModelStoreOwner(this@OverlayService)
+            //setViewTreeSavedStateRegistryOwner(this@OverlayService)
+
+            setupServiceLifecycle()
 
             setContent {
                 var visible by remember { mutableStateOf(false) }
                 var summaryResult by remember { mutableStateOf("Iniciando processamento...") }
                 val scope = rememberCoroutineScope()
-                val focusRequester = remember { FocusRequester() }
+                //val focusRequester = remember { FocusRequester() }
 
                 // Efeito que dispara assim que o Canvas aparece
                 LaunchedEffect(Unit) {
-                    if (urlFromWidget.isNotEmpty()) {
-                        focusRequester.requestFocus() // Abre o teclado automaticamente
-                    }
+                    //if (urlFromWidget.isNotEmpty()) {
+                    //    focusRequester.requestFocus() // Abre o teclado automaticamente
+                    //}
                     visible = true
                     scope.launch {
                         summaryResult = "Extraindo transcrição do YouTube..."
@@ -205,12 +212,6 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
                     }
                 }
 
-                TextField(
-                    value = text,
-                    onValueChange = { ... },
-                    modifier = Modifier.focusRequester(focusRequester)
-                )
-
                 // O visual do Canvas (Popup)
                 AnimatedVisibility(
                     visible = visible,
@@ -218,7 +219,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
                 ) {
                     Surface(
                         modifier = Modifier.fillMaxWidth(0.9f).heightIn(max = 600.dp).padding(16.dp),
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+                        shape = RoundedCornerShape(28.dp),
                         color = Color(0xFF1E1E1E),
                         tonalElevation = 8.dp
                     ) {
@@ -277,7 +278,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
             }
         }
 
-        setupServiceLifecycle()
+        //setupServiceLifecycle()
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
