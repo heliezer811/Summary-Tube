@@ -51,31 +51,66 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
 
         when (action) {
             "ACTION_OPEN_INPUT" -> showInputOverlay(yOffset)
-            "ACTION_PASTE_AND_SUMMARY" -> {
-                val link = getLinkFromClipboard()
-                showSummaryOverlay(link)
-            }
-            else -> {
-                val url = intent?.getStringExtra("VIDEO_URL") ?: ""
-                showSummaryOverlay(url)
-            }
+            "ACTION_PASTE_AND_SUMMARY" -> showSummaryOverlay(getLinkFromClipboard())
+            else -> showSummaryOverlay(intent?.getStringExtra("VIDEO_URL") ?: "")
         }
         return START_NOT_STICKY
     }
 
-    // MODO 1: Barra de Digitação (Estilo Google Search)
+    // 2. MODO INPUT (Barra transparente com teclado)
     private fun showInputOverlay(yPos: Int) {
-        val params = createLayoutParams(yPos)
-        params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL // LIBERA O TECLADO
-    
-        val composeView = ComposeView(this).apply {
-            // Configure o LifecycleOwner aqui como você já fez no seu código...
+        // Se já existe um overlay aberto, remove antes de criar outro
+        composeView?.let { windowManager.removeView(it) }
+
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, // Permite o teclado
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.TOP
+            y = yPos // Posiciona na altura do widget
+        }
+
+        composeView = ComposeView(this).apply {
+            setupServiceLifecycle() // função de lifecycle
             setContent {
                 var text by remember { mutableStateOf("") }
                 val focusRequester = remember { FocusRequester() }
 
                 LaunchedEffect(Unit) { focusRequester.requestFocus() } // Abre teclado
 
+                // Layout da barra de digitação
+                Surface(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    color = Color(0xFF1E1E1E).copy(alpha = 0.95f),
+                    shape = RoundedCornerShape(30.dp),
+                    shadowElevation = 8.dp
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        TextField(
+                            value = text,
+                            onValueChange = { text = it },
+                            placeholder = { Text("Cole o link aqui...", color = Color.Gray) },
+                            modifier = Modifier.weight(1f).focusRequester(focusRequester),
+                            colors = TextFieldDefaults.colors(
+                                containerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent
+                            )
+                        )
+                        // O BOTÃO DE ENVIAR QUE VOCÊ PEDIU
+                        IconButton(onClick = { 
+                            if (text.isNotBlank()) {
+                                // IMPORTANTE: Primeiro removemos o input para abrir o resumo
+                                windowManager.removeView(this@apply)
+                                showSummaryOverlay(text) 
+                            }
+                        }) {
+                            Icon(painterResource(id = R.drawable.ic_send), null, tint = Color.White)
+                        }
+                    }
+                }
                 Box(modifier = Modifier.fillMaxSize().clickable { stopSelf() }) { // Fecha se clicar fora
                     Surface(
                         modifier = Modifier
