@@ -46,6 +46,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         super.onCreate()
         savedStateRegistryController.performRestore(null)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
     }
 
     // Aqui recebemos o link vindo do Widget
@@ -58,12 +59,17 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
 
         when (action) {
             "ACTION_OPEN_INPUT" -> showInputOverlay(yOffset)
-            "ACTION_PASTE_AND_SUMMARY" -> showSummaryOverlay(getLinkFromClipboard())
-            else -> showSummaryOverlay(intent?.getStringExtra("VIDEO_URL") ?: "")
-
+            "ACTION_PASTE_AND_SUMMARY" -> {
+                val link = getLinkFromClipboard()
+                showSummaryOverlay(link)
+            }
             "ACTION_START_FROM_WIDGET" -> {
                 val url = intent.getStringExtra("VIDEO_URL") ?: ""
                 showSummaryOverlay(url)
+            }
+            else -> {
+                val url = intent?.getStringExtra("VIDEO_URL") ?: ""
+                if (url.isNotEmpty()) showSummaryOverlay(url)
             }
         }
         return START_NOT_STICKY
