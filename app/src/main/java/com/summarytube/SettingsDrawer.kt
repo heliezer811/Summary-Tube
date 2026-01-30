@@ -67,15 +67,21 @@ fun SettingsDrawerContent(onClose: () -> Unit) {
 
         // SELEÇÃO DE MODELO (Dropdown)
         SettingLabel("Model:")
-        Box(modifier = Modifier.fillMaxWidth()) {
-            OutlinedButton(
-                onClick = { expanded = true },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-                border = null // Remove borda padrão
-            ) {
-                Text(selectedModel, color = Color.White)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+                .border(
+                    width = 1.dp, 
+                    color = Color(0xFF333333), 
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .background(Color(0xFF1E1E1E), RoundedCornerShape(12.dp))
+                .clickable { expanded = true }
+                .padding(16.dp)
+                //border = null // Remove borda padrão
+        ) {
+            Text(selectedModel, color = Color.White)
             }
             DropdownMenu(
                 expanded = expanded,
