@@ -1,18 +1,25 @@
 package com.summarytube
 
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.view.WindowManager
 import android.graphics.PixelFormat
 import android.view.Gravity
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.animation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.TextStyle
@@ -53,6 +60,11 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
             "ACTION_OPEN_INPUT" -> showInputOverlay(yOffset)
             "ACTION_PASTE_AND_SUMMARY" -> showSummaryOverlay(getLinkFromClipboard())
             else -> showSummaryOverlay(intent?.getStringExtra("VIDEO_URL") ?: "")
+
+            "ACTION_START_FROM_WIDGET" -> {
+                val url = intent.getStringExtra("VIDEO_URL") ?: ""
+                showSummaryOverlay(url)
+            }
         }
         return START_NOT_STICKY
     }
@@ -82,56 +94,38 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
                 LaunchedEffect(Unit) { focusRequester.requestFocus() } // Abre teclado
 
                 // Layout da barra de digitação
-                Surface(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    color = Color(0xFF1E1E1E).copy(alpha = 0.95f),
-                    shape = RoundedCornerShape(30.dp),
-                    shadowElevation = 8.dp
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        TextField(
-                            value = text,
-                            onValueChange = { text = it },
-                            placeholder = { Text("Cole o link aqui...", color = Color.Gray) },
-                            modifier = Modifier.weight(1f).focusRequester(focusRequester),
-                            colors = TextFieldDefaults.colors(
-                                containerColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent
-                            )
-                        )
-                        // O BOTÃO DE ENVIAR QUE VOCÊ PEDIU
-                        IconButton(onClick = { 
-                            if (text.isNotBlank()) {
-                                // IMPORTANTE: Primeiro removemos o input para abrir o resumo
-                                windowManager.removeView(this@apply)
-                                showSummaryOverlay(text) 
-                            }
-                        }) {
-                            Icon(painterResource(id = R.drawable.ic_send), null, tint = Color.White)
-                        }
-                    }
-                }
-                Box(modifier = Modifier.fillMaxSize().clickable { stopSelf() }) { // Fecha se clicar fora
+                Box(modifier = Modifier.fillMaxSize().clickable { stopSelf() }) {
                     Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .height(60.dp)
-                            .focusRequester(focusRequester),
-                        color = Color(0xFF1E1E1E),
-                        shape = RoundedCornerShape(30.dp)
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        color = Color(0xFF1E1E1E).copy(alpha = 0.95f),
+                        shape = RoundedCornerShape(30.dp),
+                        shadowElevation = 8.dp
                     ) {
-                        TextField(
-                            value = text,
-                            onValueChange = { text = it },
-                            placeholder = { Text("Type or paste link...") },
-                            modifier = Modifier.fillMaxSize(),
-                            trailingIcon = {
-                                IconButton(onClick = { showSummaryOverlay(text) }) {
-                                    Icon(painterResource(id = R.drawable.ic_send), null, tint = Color.White)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            TextField(
+                                value = text,
+                                onValueChange = { text = it },
+                                placeholder = { Text("Type or paste link...", color = Color.Gray) },
+                                modifier = Modifier.weight(1f).focusRequester(focusRequester),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    focusedTextColor = Color.White
+                                )
+                            )
+                            // O BOTÃO DE ENVIAR QUE VOCÊ PEDIU
+                            IconButton(onClick = { 
+                                if (text.isNotBlank()) {
+                                    // IMPORTANTE: Primeiro removemos o input para abrir o resumo
+                                    windowManager.removeView(this@apply)
+                                    showSummaryOverlay(text) 
                                 }
+                            }) {
+                                Icon(painterResource(id = R.drawable.ic_send), null, tint = Color.White)
                             }
-                        )
+                        }
                     }
                 }
             }
