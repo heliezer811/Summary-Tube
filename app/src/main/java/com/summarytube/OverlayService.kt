@@ -19,17 +19,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ComposeView
+//import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.TextStyle
 import androidx.lifecycle.*
-//import androidx.lifecycle.setViewTreeLifecycleOwner
-//import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.*
-//import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import kotlinx.coroutines.launch
+import android.net.Uri
 
 class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
     private lateinit var windowManager: WindowManager
@@ -64,8 +65,8 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
                 showSummaryOverlay(link)
             }
             "ACTION_START_FROM_WIDGET" -> {
-                val url = intent.getStringExtra("VIDEO_URL") ?: ""
-                showSummaryOverlay(url)
+                val urlFromWidget = intent.getStringExtra("VIDEO_URL") ?: ""
+                showSummaryOverlay(urlFromWidget)
             }
             else -> {
                 val url = intent?.getStringExtra("VIDEO_URL") ?: ""
@@ -75,26 +76,26 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         return START_NOT_STICKY
     }
 
+    private fun setupServiceLifecycle() {
+        composeView?.let {
+            it.setViewTreeLifecycleOwner(this)
+            it.setViewTreeViewModelStoreOwner(this)
+            it.setViewTreeSavedStateRegistryOwner(this)
+        }
+    }
+
     // 2. MODO INPUT (Barra transparente com teclado)
     private fun showInputOverlay(yPos: Int) {
         // Se já existe um overlay aberto, remove antes de criar outro
-        composeView?.let { windowManager.removeView(it) }
-
-        val params = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, // Permite o teclado
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.TOP
-            y = yPos // Posiciona na altura do widget
+        if (composeView != null) {
+            windowManager.removeView(composeView)
+            composeView = null
         }
 
         composeView = ComposeView(this).apply {
             setupServiceLifecycle() // função de lifecycle
             setContent {
-                var text by remember { mutableStateOf("") }
+                var textInput by remember { mutableStateOf("") }
                 val focusRequester = remember { FocusRequester() }
 
                 LaunchedEffect(Unit) { focusRequester.requestFocus() } // Abre teclado
@@ -107,10 +108,13 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
                         shape = RoundedCornerShape(30.dp),
                         shadowElevation = 8.dp
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                        ) {
                             TextField(
-                                value = text,
-                                onValueChange = { text = it },
+                                value = textInput,
+                                onValueChange = { textInput = it },
                                 placeholder = { Text("Type or paste link...", color = Color.Gray) },
                                 modifier = Modifier.weight(1f).focusRequester(focusRequester),
                                 colors = TextFieldDefaults.colors(
@@ -123,46 +127,42 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
                             )
                             // O BOTÃO DE ENVIAR QUE VOCÊ PEDIU
                             IconButton(onClick = { 
-                                if (text.isNotBlank()) {
+                                if (textInput.isNotEmpty()) {
                                     // IMPORTANTE: Primeiro removemos o input para abrir o resumo
-                                    windowManager.removeView(this@apply)
-                                    showSummaryOverlay(text) 
+                                    //windowManager.removeView(this@apply)
+                                    showSummaryOverlay(textInput) 
                                 }
                             }) {
-                                Icon(painterResource(id = R.drawable.ic_send), null, tint = Color.White)
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_send),
+                                    contentDescription = "Send",
+                                    tint = Color.White
+                                )
                             }
                         }
                     }
                 }
             }
         }
-        windowManager.addView(composeView, params)
-    }
-    // Helper para criar os parâmetros de posição
-    private fun createLayoutParams(yPos: Int): WindowManager.LayoutParams {
-        return WindowManager.LayoutParams(
+        
+        setupServiceLifecycle()
+
+        // Helper para criar os parâmetros de posição
+        val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            0,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP
             y = yPos // Posiciona exatamente na altura do widget
         }
-    }
 
-    private fun getLinkFromClipboard(): String {
-        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-        val clipData = clipboard.primaryClip
-        if (clipData != null && clipData.itemCount > 0) {
-            val item = clipData.getItemAt(0)
-            return item.text?.toString() ?: ""
-        }
-        return ""
+        windowManager.addView(composeView, params)
     }
     
-    private fun showCanvas(videoUrl: String) {
+    private fun showSummaryOverlay(videoUrl: String) {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         val prefs = Prefs(this) // Carrega sua API Key e Prompt salvos
         
@@ -277,16 +277,37 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
             }
         }
 
+        setupServiceLifecycle()
+
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT, // Altura ajustável
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            //WindowManager.LayoutParams.FLAG_DIM_BEHIND,//Escurece fundo atraz do overlay
-            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, // Permite que o teclado apareça!
+            WindowManager.LayoutParams.FLAG_DIM_BEHIND,//Escurece fundo atraz do overlay
+            //WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, // Permite que o teclado apareça!
             PixelFormat.TRANSLUCENT
         ).apply { dimAmount = 0.5f; gravity = Gravity.TOP }
 
         windowManager.addView(composeView, params)
+    }
+
+    private fun getLinkFromClipboard(): String {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        val clipData = clipboard.primaryClip
+        if (clipData != null && clipData.itemCount > 0) {
+            val item = clipData.getItemAt(0)
+            return item.text?.toString() ?: ""
+        }
+        return ""
+    }
+
+    private fun shareToObsidian(context: Context, content: String) {
+        val encodedContent = Uri.encode(content)
+        val uri = Uri.parse("obsidian://new?content=$encodedContent")
+        val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
     }
 
     override fun onDestroy() {
