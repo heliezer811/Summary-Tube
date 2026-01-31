@@ -72,6 +72,23 @@ fun MainScreen() {
             //{ SettingsDrawerContent() }
     ) {
         Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Summary-Tube", color = Color.White) },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { if(drawerState.isClosed) drawerState.open() else drawerState.close() } }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_menu),
+                                contentDescription = "Menu",
+                                modifier = Modifier
+                                    .rotate(rotationAngle) // Aplica a animação de rotação
+                                    .size(32.dp) // Aumenta o tamanho do ícone Menu
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
+                )
+            },
             containerColor = Color.Black
         ) { padding ->
             Column(
@@ -81,28 +98,6 @@ fun MainScreen() {
                     .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
-                ) {
-            //topBar = {
-                //TopAppBar(
-                    //title = { Text("Summary-Tube", color = Color.White) },
-                    //navigationIcon = {
-                    IconButton(onClick = { scope.launch { if(drawerState.isClosed) drawerState.open() else drawerState.close() } }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_menu),
-                            contentDescription = "Menu",
-                            tint = Color.White,
-                            modifier = Modifier
-                                .rotate(rotationAngle) // Aplica a animação de rotação
-                                .size(32.dp) // Aumenta o tamanho do ícone do menu
-                        )
-                        //}
-                    }
-                    //colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
-                }
-
                 // ÁREA DO CANVAS (Onde o texto aparece)
                 Box(
                     modifier = Modifier
