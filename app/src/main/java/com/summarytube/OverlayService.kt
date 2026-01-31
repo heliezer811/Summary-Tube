@@ -156,8 +156,8 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.TOP
-            y = yPos // Posiciona exatamente na altura do widget
+            gravity = Gravity.CENTER
+            y = 0 // Posiciona exatamente na altura do widget
         }
 
         windowManager.addView(composeView, params)
