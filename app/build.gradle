@@ -37,7 +37,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.5.1'
+        kotlinCompilerExtensionVersion '1.5.14'
     }
 }
 
@@ -79,9 +79,10 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
 
     // Imports da libs
-    //implementation files('libs/compose-markdown-0.5.8.aar')
+    // Implementa Markdown no resumo
     implementation(name: 'compose-markdown-0.5.8', ext: 'aar')
 
+    // Coil para imagens no Markdown
     implementation "io.coil-kt:coil-compose:2.7.0"
 
     // Testes
