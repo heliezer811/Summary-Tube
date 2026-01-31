@@ -6,6 +6,7 @@ import android.content.Intent
 import android.view.WindowManager
 import android.graphics.PixelFormat
 import android.view.Gravity
+import android.widget.Toast
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -63,7 +64,12 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
             "ACTION_OPEN_INPUT" -> showInputOverlay(yOffset)
             "ACTION_PASTE_AND_SUMMARY" -> {
                 val link = getLinkFromClipboard()
-                showSummaryOverlay(link)
+                if (link.isNotEmpty()) {
+                    showSummaryOverlay(link)
+                } else {
+                    // Adicione um Toast para debug (import android.widget.Toast)
+                    Toast.makeText(this, "Nada no clipboard", Toast.LENGTH_SHORT).show()
+                }
             }
             "ACTION_START_FROM_WIDGET" -> {
                 val urlFromWidget = intent.getStringExtra("VIDEO_URL") ?: ""
