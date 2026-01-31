@@ -104,6 +104,7 @@ fun MainScreen() {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .systemBarsPadding()
                     .padding(padding)
                     .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
