@@ -66,22 +66,6 @@ fun MainScreen() {
             //{ SettingsDrawerContent() }
     ) {
         Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Summary-Tube", color = Color.White) },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { if(drawerState.isClosed) drawerState.open() else drawerState.close() } }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_menu),
-                                contentDescription = "Menu",
-                                tint = Color.White,
-                                modifier = Modifier.rotate(rotationAngle) // Aplica a animação de rotação
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
-                )
-            },
             containerColor = Color.Black
         ) { padding ->
             Column(
@@ -91,6 +75,28 @@ fun MainScreen() {
                     .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+            //topBar = {
+                //TopAppBar(
+                    //title = { Text("Summary-Tube", color = Color.White) },
+                    //navigationIcon = {
+                    IconButton(onClick = { scope.launch { if(drawerState.isClosed) drawerState.open() else drawerState.close() } }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_menu),
+                            contentDescription = "Menu",
+                            tint = Color.White,
+                            modifier = Modifier
+                                .rotate(rotationAngle) // Aplica a animação de rotação
+                                .size(32.dp) // Aumenta o tamanho do ícone do menu
+                        )
+                        //}
+                    }
+                    //colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
+                }
+
                 // ÁREA DO CANVAS (Onde o texto aparece)
                 Box(
                     modifier = Modifier
@@ -147,11 +153,16 @@ fun MainScreen() {
                         if (urlText.isNotEmpty()) {
                             isLoading = true
                             scope.launch {
-                                val transcript = YouTubeTranscriptHelper.fetchTranscript(urlText)
-                                summaryResult = OpenAIService.generateSummary(
-                                    transcript, prefs.customPrompt, prefs.apiKey, prefs.selectedModel
-                                )
-                                isLoading = false
+                                try {
+                                    val transcript = YouTubeTranscriptHelper.fetchTranscript(urlText)
+                                    summaryResult = OpenAIService.generateSummary(
+                                        transcript, prefs.customPrompt, prefs.apiKey, prefs.selectedModel
+                                    )
+                                } catch (e: Exception) {
+                                    summaryResult = "Erro ao processar: ${e.message}. Verifique link, rede ou API key nas settings."
+                                } finally {
+                                    isLoading = false
+                                }
                             }
                         }
                     }
