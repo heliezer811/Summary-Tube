@@ -147,16 +147,11 @@ fun MainScreen() {
                         if (urlText.isNotEmpty()) {
                             isLoading = true
                             scope.launch {
-                                try {
-                                    val transcript = YouTubeTranscriptHelper.fetchTranscript(urlText)
-                                    summaryResult = OpenAIService.generateSummary(
-                                        transcript, prefs.customPrompt, prefs.apiKey, prefs.selectedModel
-                                    )
-                                } catch (e: Exception) {
-                                    summaryResult = "Erro ao processar o vídeo: ${e.message}. Verifique o link, API key ou rede."
-                                } finally {
-                                    isLoading = false
-                                }
+                                val transcript = YouTubeTranscriptHelper.fetchTranscript(urlText)
+                                summaryResult = OpenAIService.generateSummary(
+                                    transcript, prefs.customPrompt, prefs.apiKey, prefs.selectedModel
+                                )
+                                isLoading = false
                             }
                         }
                     }
