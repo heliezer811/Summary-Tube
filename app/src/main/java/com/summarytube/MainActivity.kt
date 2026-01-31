@@ -1,5 +1,6 @@
 package com.summarytube
 
+import android.util.Log
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
@@ -153,13 +154,17 @@ fun MainScreen() {
                     onSend = {
                         if (urlText.isNotEmpty()) {
                             isLoading = true
+                            Log.d("SummaryTube", "Iniciando processamento do link: $urlText") // ← Debug start
                             scope.launch {
                                 try {
                                     val transcript = YouTubeTranscriptHelper.fetchTranscript(urlText)
+                                    Log.d("SummaryTube", "Transcrição obtida: ${transcript.take(100)}") // Debug transcript
                                     summaryResult = OpenAIService.generateSummary(
                                         transcript, prefs.customPrompt, prefs.apiKey, prefs.selectedModel
                                     )
+                                    Log.d("SummaryTube", "Resumo gerado com sucesso") // Debug sucesso
                                 } catch (e: Exception) {
+                                    Log.e("SummaryTube", "Erro no processamento", e) // ← Debug erro
                                     summaryResult = "Erro ao processar: ${e.message}. Verifique link, rede ou API key nas settings."
                                 } finally {
                                     isLoading = false
