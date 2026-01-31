@@ -32,9 +32,9 @@
                 android:resource="@xml/widget_info" />
         </receiver>
 
+        <!-- Overlay Service -->
         <service 
             android:name=".OverlayService" 
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"  // Se usar accessibility para clipboard
             android:exported="false" />
 
     </application>
