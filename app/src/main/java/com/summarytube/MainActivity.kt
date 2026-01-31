@@ -66,33 +66,21 @@ fun MainScreen() {
             //{ SettingsDrawerContent() }
     ) {
         Scaffold(
-            //topBar = {
-            containerColor = Color.Black
-        ) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            )
-                //TopAppBar(
-                    //title = { Text("Summary-Tube", color = Color.White) },
-                    //navigationIcon = {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-                    IconButton(onClick = { scope.launch { if(drawerState.isClosed) drawerState.open() else drawerState.close() } }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_menu),
-                            contentDescription = "Menu",
-                            tint = Color.White,
-                            modifier = Modifier
-                                .rotate(rotationAngle) // Aplica a animação de rotação
-                                .size(32.dp) //Altera o Tamanho do ícone
-                        )
-                    //}
-                    }//,
-                    //colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
-                }
+            topBar = {
+                TopAppBar(
+                    title = { Text("Summary-Tube", color = Color.White) },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { if(drawerState.isClosed) drawerState.open() else drawerState.close() } }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_menu),
+                                contentDescription = "Menu",
+                                tint = Color.White,
+                                modifier = Modifier.rotate(rotationAngle) // Aplica a animação de rotação
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black)
+                )
             },
             containerColor = Color.Black
         ) { padding ->
