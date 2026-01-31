@@ -57,8 +57,8 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         val action = intent?.action
     
         // Captura a posição do widget na tela (se disponível)
-        val bounds = intent?.sourceBounds
-        val yOffset = bounds?.top ?: 100 // Posição vertical do widget
+        //val bounds = intent?.sourceBounds
+        //val yOffset = bounds?.top ?: 100 // Posição vertical do widget
 
         when (action) {
             "ACTION_OPEN_INPUT" -> showInputOverlay(yOffset)
@@ -92,7 +92,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
     }
 
     // 2. MODO INPUT (Barra transparente com teclado)
-    private fun showInputOverlay(yPos: Int) {
+    private fun showInputOverlay() {
         // Se já existe um overlay aberto, remove antes de criar outro
         if (composeView != null) {
             windowManager.removeView(composeView)
@@ -210,19 +210,24 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
                     //}
                     visible = true
                     scope.launch {
-                        summaryResult = "Extraindo transcrição do YouTube..."
-                        val transcript = YouTubeTranscriptHelper.fetchTranscript(videoUrl)
-                        
-                        if (transcript.startsWith("Erro")) {
-                            summaryResult = "### Erro na Transcrição\n$transcript"
-                        } else {
-                            summaryResult = "Transcrição obtida. Gerando resumo com IA..."
-                            summaryResult = OpenAIService.generateSummary(
-                                transcript, 
-                                prefs.customPrompt, 
-                                prefs.apiKey, 
-                                prefs.selectedModel
-                            )
+                        try {
+                            summaryResult = "Extraindo transcrição do YouTube..."
+                            val transcript = YouTubeTranscriptHelper.fetchTranscript(videoUrl)
+                           
+                            if (transcript.startsWith("Erro")) {
+                                summaryResult = "### Erro na Transcrição\n$transcript"
+                            } else {
+                                summaryResult = "Transcrição obtida. Gerando resumo com IA..."
+                                summaryResult = OpenAIService.generateSummary(
+                                    transcript,
+                                    prefs.customPrompt,
+                                    prefs.apiKey,
+                                    prefs.selectedModel
+                                )
+                            }
+                        } catch (e: Exception) {
+                            Log.e("SummaryTube", "Erro no summary overlay", e)
+                            summaryResult = "Erro ao processar: ${e.message}. Verifique link ou rede."
                         }
                     }
                 }
@@ -302,7 +307,10 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
             WindowManager.LayoutParams.FLAG_DIM_BEHIND,//Escurece fundo atraz do overlay
             //WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, // Permite que o teclado apareça!
             PixelFormat.TRANSLUCENT
-        ).apply { dimAmount = 0.5f; gravity = Gravity.TOP }
+        ).apply {
+            gravity = Gravity.CENTER;  // ← Centralizado na tela
+            y = 0;
+        }
 
         windowManager.addView(composeView, params)
     }
