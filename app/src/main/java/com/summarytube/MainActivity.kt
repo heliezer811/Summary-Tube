@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
+import android.view.WindowManager
 import android.os.Build
 import android.net.Uri
 import android.os.Bundle
@@ -37,8 +38,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         try {
-            // Edge-to-edge e transparent status bar
-            window.setDecorFitsSystemWindows(false)
+            // Edge-to-edge e transparent status bar (com check de versão para evitar crash)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {  // API 30+
+                window.setDecorFitsSystemWindows(false)
+            } else {
+                // Para Android 10 ou inferior: Usa flags antigas para translucent
+                window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+                window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+            }
             window.statusBarColor = android.graphics.Color.TRANSPARENT
             window.navigationBarColor = android.graphics.Color.TRANSPARENT
         
