@@ -35,16 +35,26 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Remover barra cinza e tornar edge-to-edge
-        window.setDecorFitsSystemWindows(false)
-        window.statusBarColor = android.graphics.Color.TRANSPARENT
-        window.navigationBarColor = android.graphics.Color.TRANSPARENT
-
-        // Check de permissão de overlay
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${packageName}"))
-            startActivity(intent)
-            finish()
+        try {
+            // Edge-to-edge e transparent status bar
+            window.setDecorFitsSystemWindows(false)
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            window.navigationBarColor = android.graphics.Color.TRANSPARENT
+        
+            // Check de permissão de overlay
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+                startActivity(intent)
+                finish() // Fecha até conceder
+                return  // Sai do onCreate para não tentar setContent sem permissão
+            }
+        
+            Log.d("SummaryTube", "onCreate concluído — abrindo UI") // Debug sucesso
+        } catch (e: Exception) {
+            Log.e("SummaryTube", "Erro no onCreate", e) // Debug erro
+            Toast.makeText(this, "Erro ao iniciar app: ${e.message}", Toast.LENGTH_LONG).show()
+            finish() // Fecha se erro
+            return
         }
 
         setContent {
