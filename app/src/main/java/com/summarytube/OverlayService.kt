@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.view.WindowManager
 import android.graphics.PixelFormat
+import android.util.Log
 import android.view.Gravity
 import android.widget.Toast
 import androidx.compose.ui.platform.ComposeView
@@ -54,6 +55,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
 
     // Aqui recebemos o link vindo do Widget
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d("SummaryTube", "Service started with action: ${intent?.action}")
         val action = intent?.action
     
         // Captura a posição do widget na tela (se disponível)
@@ -61,7 +63,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         //val yOffset = bounds?.top ?: 100 // Posição vertical do widget
 
         when (action) {
-            "ACTION_OPEN_INPUT" -> showInputOverlay(yOffset)
+            "ACTION_OPEN_INPUT" -> showInputOverlay()
             "ACTION_PASTE_AND_SUMMARY" -> {
                 val link = getLinkFromClipboard()
                 if (link.isNotEmpty()) {
@@ -308,6 +310,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
             //WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, // Permite que o teclado apareça!
             PixelFormat.TRANSLUCENT
         ).apply {
+            dimAmount = 0.5f;
             gravity = Gravity.CENTER;  // ← Centralizado na tela
             y = 0;
         }
