@@ -1,5 +1,6 @@
 package com.summarytube
 
+import android.util.Log
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -13,6 +14,7 @@ object OpenAIService {
     private val MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
 
     suspend fun generateSummary(transcript: String, userPrompt: String, apiKey: String, model: String): String = withContext(Dispatchers.IO) {
+        Log.d("SummaryTube", "generateSummary: Iniciando com model $model e key ${apiKey.take(5)}...") // Debug
         try {
             val url = "https://api.openai.com/v1/chat/completions"
             
@@ -39,8 +41,9 @@ object OpenAIService {
                 .build()
 
             val response = client.newCall(request).execute()
-            val responseData = response.body?.string() ?: ""
-            
+            val responseData = response.body?.string() ?: return@withContext "Resposta vazia da OpenAI."
+            Log.d("SummaryTube", "generateSummary: Response recebida com code ${response.code}") // Debug response
+
             if (response.isSuccessful) {
                 val jsonResponse = JSONObject(responseData)
                 jsonResponse.getJSONArray("choices")
@@ -48,10 +51,11 @@ object OpenAIService {
                     .getJSONObject("message")
                     .getString("content")
             } else {
-                "Erro na API: ${response.message}"
+                "Erro na API OpenAI: ${response.message} (code ${response.code}). Verifique API key ou limite."
             }
         } catch (e: Exception) {
-            "Erro de conexão: ${e.message}"
+            Log.e("SummaryTube", "Erro geral em generateSummary", e) // Debug erro
+            "Erro de conexão com OpenAI: ${e.message}. Verifique rede ou API key."
         }
     }
 }
