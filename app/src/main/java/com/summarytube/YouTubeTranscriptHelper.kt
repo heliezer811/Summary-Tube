@@ -1,5 +1,6 @@
 package com.summarytube
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -10,6 +11,7 @@ object YouTubeTranscriptHelper {
     private val client = OkHttpClient()
 
     suspend fun fetchTranscript(videoUrl: String): String = withContext(Dispatchers.IO) {
+        Log.d("SummaryTube", "fetchTranscript: Iniciando para URL $videoUrl") // Debug
         try {
             val videoId = extractVideoId(videoUrl) ?: return@withContext "ID do vídeo inválido."
             
@@ -20,7 +22,11 @@ object YouTubeTranscriptHelper {
                 .build()
 
             val response = client.newCall(request).execute()
-            val html = response.body?.string() ?: ""
+            if (!response.isSuccessful) {
+                return@withContext "Erro HTTP ao pegar página do vídeo: ${response.code}"
+            }
+            val html = response.body?.string() ?: return@withContext "Resposta vazia da página do vídeo."
+            Log.d("SummaryTube", "fetchTranscript: HTML da página obtido com sucesso") // Debug
 
             // 2. Localizar a URL do arquivo de legendas (TimedText)
             val captionUrl = findCaptionUrl(html) 
@@ -29,11 +35,16 @@ object YouTubeTranscriptHelper {
             // 3. Baixar o XML das legendas e limpar as tags
             val captionRequest = Request.Builder().url(captionUrl).build()
             val captionResponse = client.newCall(captionRequest).execute()
-            val xmlText = captionResponse.body?.string() ?: ""
+            if (!captionResponse.isSuccessful) {
+                return@withContext "Erro HTTP ao pegar legendas: ${captionResponse.code}"
+            }
+            val xmlText = captionResponse.body?.string() ?: return@withContext "Resposta vazia das legendas."
+            Log.d("SummaryTube", "fetchTranscript: XML de legendas obtido com sucesso") // Debug
 
             return@withContext cleanXmlTranscript(xmlText)
         } catch (e: Exception) {
-            "Erro ao extrair transcrição: ${e.message}"
+            Log.e("SummaryTube", "Erro geral em fetchTranscript", e) // Debug erro
+            "Erro ao extrair transcrição: ${e.message}. Verifique se o vídeo tem legendas ou rede."
         }
     }
 
