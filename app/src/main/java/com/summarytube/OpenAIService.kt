@@ -9,6 +9,7 @@ import org.json.JSONObject
 import org.json.JSONException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.concurrent.TimeUnit
 
 object OpenAIService {
     private val client = OkHttpClient.Builder()
@@ -49,12 +50,13 @@ object OpenAIService {
                 .build()
 
             val response = client.newCall(request).execute()
-            val responseData = response.body?.string() ?: {
+            val responseData = response.body?.string()
+            if (responseData == null) {
                 Log.e("SummaryTube", "Resposta vazia da OpenAI")
                 return@withContext "Resposta vazia da OpenAI."
-            }()
+            }
             Log.d("SummaryTube", "generateSummary: Response recebida com code ${response.code}")
-
+            
             if (response.isSuccessful) {
                 try {
                     val jsonResponse = JSONObject(responseData)
