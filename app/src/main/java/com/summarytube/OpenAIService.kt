@@ -6,16 +6,24 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import org.json.JSONException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 object OpenAIService {
-    private val client = OkHttpClient()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.SECONDS)  // Timeout para evitar hangs
+        .readTimeout(10, TimeUnit.SECONDS)
+        .build()
     private val MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
 
     suspend fun generateSummary(transcript: String, userPrompt: String, apiKey: String, model: String): String = withContext(Dispatchers.IO) {
         Log.d("SummaryTube", "generateSummary: Iniciando com model $model e key ${apiKey.take(5)}...") // Debug
         try {
+            if (apiKey.isEmpty()) {
+                return@withContext "Erro: API Key não configurada. Vá nas settings."
+            }
+            
             val url = "https://api.openai.com/v1/chat/completions"
             
             // Montamos o corpo da requisição com o prompt e a transcrição
@@ -41,16 +49,25 @@ object OpenAIService {
                 .build()
 
             val response = client.newCall(request).execute()
-            val responseData = response.body?.string() ?: return@withContext "Resposta vazia da OpenAI."
-            Log.d("SummaryTube", "generateSummary: Response recebida com code ${response.code}") // Debug response
+            val responseData = response.body?.string() ?: {
+                Log.e("SummaryTube", "Resposta vazia da OpenAI")
+                return@withContext "Resposta vazia da OpenAI."
+            }()
+            Log.d("SummaryTube", "generateSummary: Response recebida com code ${response.code}")
 
             if (response.isSuccessful) {
-                val jsonResponse = JSONObject(responseData)
-                jsonResponse.getJSONArray("choices")
-                    .getJSONObject(0)
-                    .getJSONObject("message")
-                    .getString("content")
+                try {
+                    val jsonResponse = JSONObject(responseData)
+                    jsonResponse.getJSONArray("choices")
+                        .getJSONObject(0)
+                        .getJSONObject("message")
+                        .getString("content")
+                } catch (e: JSONException) {
+                    Log.e("SummaryTube", "Erro no parse JSON da OpenAI", e)
+                    "Erro no parse da resposta OpenAI: ${e.message}"
+                }
             } else {
+                Log.e("SummaryTube", "Erro HTTP na OpenAI: code ${response.code}, message ${response.message}")
                 "Erro na API OpenAI: ${response.message} (code ${response.code}). Verifique API key ou limite."
             }
         } catch (e: Exception) {
