@@ -180,17 +180,21 @@ fun MainScreen() {
                         urlText = clipboard.primaryClip?.getItemAt(0)?.text?.toString() ?: ""
                     },
                     onSend = {
-                        if (urlText.isNotEmpty()) {
+                        if (urlText.isNotBlank()) {
                             isLoading = true
                             Log.d("SummaryTube", "Iniciando processamento do link: $urlText") // ← Debug start
                             scope.launch {
                                 try {
                                     val transcript = YouTubeTranscriptHelper.fetchTranscript(urlText)
                                     Log.d("SummaryTube", "Transcrição obtida: ${transcript.take(100)}") // Debug transcript
-                                    summaryResult = OpenAIService.generateSummary(
-                                        transcript, prefs.customPrompt, prefs.apiKey, prefs.selectedModel
-                                    )
-                                    Log.d("SummaryTube", "Resumo gerado com sucesso") // Debug sucesso
+                                    if (transcript.startsWith("Erro") || transcript.startsWith("ID do vídeo inválido") || transcript.startsWith("Não foi possível")) {
+                                        summaryResult = "### Erro na Transcrição\n$transcript"
+                                    } else {
+                                        summaryResult = OpenAIService.generateSummary(
+                                            transcript, prefs.customPrompt, prefs.apiKey, prefs.selectedModel
+                                        )
+                                        Log.d("SummaryTube", "Resumo gerado com sucesso") // Debug sucesso
+                                    }
                                 } catch (e: Exception) {
                                     Log.e("SummaryTube", "Erro no processamento", e) // ← Debug erro
                                     summaryResult = "Erro ao processar: ${e.message}. Verifique link, rede ou API key nas settings."
