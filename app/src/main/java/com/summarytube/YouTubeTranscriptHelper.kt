@@ -5,10 +5,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 object YouTubeTranscriptHelper {
-    private val client = OkHttpClient()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.SECONDS)  // Timeout para evitar hangs
+        .readTimeout(10, TimeUnit.SECONDS)
+        .build()
 
     suspend fun fetchTranscript(videoUrl: String): String = withContext(Dispatchers.IO) {
         Log.d("SummaryTube", "fetchTranscript: Iniciando para URL $videoUrl") // Debug
@@ -23,23 +27,32 @@ object YouTubeTranscriptHelper {
 
             val response = client.newCall(request).execute()
             if (!response.isSuccessful) {
+                Log.e("SummaryTube", "Erro HTTP na página do vídeo: ${response.code}")
                 return@withContext "Erro HTTP ao pegar página do vídeo: ${response.code}"
             }
-            val html = response.body?.string() ?: return@withContext "Resposta vazia da página do vídeo."
-            Log.d("SummaryTube", "fetchTranscript: HTML da página obtido com sucesso") // Debug
+            val html = response.body?.string() ?: {
+                Log.e("SummaryTube", "Resposta vazia da página do vídeo")
+                return@withContext "Resposta vazia da página do vídeo."
+            }()
 
             // 2. Localizar a URL do arquivo de legendas (TimedText)
             val captionUrl = findCaptionUrl(html) 
-                ?: return@withContext "Não foi possível encontrar legendas para este vídeo."
+                ?: {
+                    Log.w("SummaryTube", "Não encontrou legendas para o vídeo")
+                    return@withContext "Não foi possível encontrar legendas para este vídeo."
+                }()
 
             // 3. Baixar o XML das legendas e limpar as tags
             val captionRequest = Request.Builder().url(captionUrl).build()
             val captionResponse = client.newCall(captionRequest).execute()
             if (!captionResponse.isSuccessful) {
+                Log.e("SummaryTube", "Erro HTTP nas legendas: ${captionResponse.code}")
                 return@withContext "Erro HTTP ao pegar legendas: ${captionResponse.code}"
             }
-            val xmlText = captionResponse.body?.string() ?: return@withContext "Resposta vazia das legendas."
-            Log.d("SummaryTube", "fetchTranscript: XML de legendas obtido com sucesso") // Debug
+            val xmlText = captionResponse.body?.string() ?: {
+                Log.e("SummaryTube", "Resposta vazia das legendas")
+                return@withContext "Resposta vazia das legendas."
+            }()
 
             return@withContext cleanXmlTranscript(xmlText)
         } catch (e: Exception) {
