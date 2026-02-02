@@ -17,7 +17,10 @@ object YouTubeTranscriptHelper {
     suspend fun fetchTranscript(videoUrl: String): String = withContext(Dispatchers.IO) {
         Log.d("SummaryTube", "fetchTranscript: Iniciando para URL $videoUrl") // Debug
         try {
-            val videoId = extractVideoId(videoUrl) ?: return@withContext "ID do vídeo inválido."
+            val videoId = extractVideoId(videoUrl)
+            if (videoId == null) {
+                return@withContext "ID do vídeo inválido."
+            }
             
             // 1. Pegar a página do vídeo para encontrar a URL das legendas
             val request = Request.Builder()
@@ -30,17 +33,18 @@ object YouTubeTranscriptHelper {
                 Log.e("SummaryTube", "Erro HTTP na página do vídeo: ${response.code}")
                 return@withContext "Erro HTTP ao pegar página do vídeo: ${response.code}"
             }
-            val html = response.body?.string() ?: {
+            val html = response.body?.string()
+            if (html == null) {
                 Log.e("SummaryTube", "Resposta vazia da página do vídeo")
                 return@withContext "Resposta vazia da página do vídeo."
-            }()
+            }
 
             // 2. Localizar a URL do arquivo de legendas (TimedText)
-            val captionUrl = findCaptionUrl(html) 
-                ?: {
-                    Log.w("SummaryTube", "Não encontrou legendas para o vídeo")
-                    return@withContext "Não foi possível encontrar legendas para este vídeo."
-                }()
+            val captionUrl = findCaptionUrl(html)
+            if (captionUrl == null) {
+                Log.w("SummaryTube", "Não encontrou legendas para o vídeo")
+                return@withContext "Não foi possível encontrar legendas para este vídeo."
+            }
 
             // 3. Baixar o XML das legendas e limpar as tags
             val captionRequest = Request.Builder().url(captionUrl).build()
@@ -49,10 +53,11 @@ object YouTubeTranscriptHelper {
                 Log.e("SummaryTube", "Erro HTTP nas legendas: ${captionResponse.code}")
                 return@withContext "Erro HTTP ao pegar legendas: ${captionResponse.code}"
             }
-            val xmlText = captionResponse.body?.string() ?: {
+            val xmlText = captionResponse.body?.string()
+            if (xmlText == null) {
                 Log.e("SummaryTube", "Resposta vazia das legendas")
                 return@withContext "Resposta vazia das legendas."
-            }()
+            }
 
             return@withContext cleanXmlTranscript(xmlText)
         } catch (e: Exception) {
