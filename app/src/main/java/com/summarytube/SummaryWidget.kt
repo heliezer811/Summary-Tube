@@ -16,7 +16,11 @@ class SummaryWidget : AppWidgetProvider() {
             val inputIntent = Intent(context, OverlayService::class.java).apply {
                 action = "ACTION_OPEN_INPUT"
             }
-            val pInput = PendingIntent.getService(context, 1, inputIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            val pInput = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                PendingIntent.getForegroundService(context, 1, inputIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            } else {
+                PendingIntent.getService(context, 1, inputIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            }
             //views.setOnClickPendingIntent(R.id.widget_main_container, pInput)
             //views.setOnClickPendingIntent(R.id.iv_widget_logo, pInput)
 
@@ -24,7 +28,11 @@ class SummaryWidget : AppWidgetProvider() {
             val pasteIntent = Intent(context, OverlayService::class.java).apply {
                 action = "ACTION_PASTE_AND_SUMMARY"
             }
-            val pPaste = PendingIntent.getService(context, 2, pasteIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            val pPaste = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                PendingIntent.getForegroundService(context, 2, pasteIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            } else {
+                PendingIntent.getService(context, 2, pasteIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            }
             //views.setOnClickPendingIntent(R.id.btn_widget_paste, pPaste)
             //views.setOnClickPendingIntent(R.id.btn_widget_send, pPaste)
 
