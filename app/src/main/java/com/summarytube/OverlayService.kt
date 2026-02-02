@@ -8,6 +8,9 @@ import android.graphics.PixelFormat
 import android.util.Log
 import android.view.Gravity
 import android.widget.Toast
+import androidx.core.app.NotificationChannelCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -38,6 +41,7 @@ import android.net.Uri
 class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
     private lateinit var windowManager: WindowManager
     private var composeView: ComposeView? = null
+    private var foregroundStarted = false
 
     // Implementações obrigatórias para o Compose no Service
     private val lifecycleRegistry = LifecycleRegistry(this)
@@ -51,10 +55,12 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         savedStateRegistryController.performRestore(null)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+        ensureForeground()
     }
 
     // Aqui recebemos o link vindo do Widget
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        ensureForeground()
         Log.d("SummaryTube", "Service started with action: ${intent?.action}")
         val action = intent?.action
     
@@ -93,6 +99,30 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         }
     }
 
+    private fun setupServiceLifecycle(view: ComposeView) {
+        view.setViewTreeLifecycleOwner(this)
+        view.setViewTreeViewModelStoreOwner(this)
+        view.setViewTreeSavedStateRegistryOwner(this)
+    }
+
+    private fun ensureForeground() {
+        if (foregroundStarted) return
+        val channelId = "summarytube_overlay"
+        val channelName = "Summary-Tube Overlay"
+        val channel = NotificationChannelCompat.Builder(channelId, NotificationManagerCompat.IMPORTANCE_MIN)
+            .setName(channelName)
+            .build()
+        NotificationManagerCompat.from(this).createNotificationChannel(channel)
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("Summary-Tube")
+            .setContentText("Overlay ativo")
+            .setSmallIcon(R.drawable.ic_widget)
+            .setOngoing(true)
+            .build()
+        startForeground(1001, notification)
+        foregroundStarted = true
+    }
+
     // 2. MODO INPUT (Barra transparente com teclado)
     private fun showInputOverlay() {
         // Se já existe um overlay aberto, remove antes de criar outro
@@ -102,7 +132,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
         }
 
         composeView = ComposeView(this).apply {
-            setupServiceLifecycle() // função de lifecycle
+            setupServiceLifecycle(this) // função de lifecycle
             setContent {
                 var textInput by remember { mutableStateOf("") }
                 val focusRequester = remember { FocusRequester() }
@@ -216,7 +246,7 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
                             summaryResult = "Extraindo transcrição do YouTube..."
                             val transcript = YouTubeTranscriptHelper.fetchTranscript(videoUrl)
                            
-                            if (transcript.startsWith("Erro")) {
+                            if (transcript.startsWith("Erro") || transcript.startsWith("ID do vídeo inválido") || transcript.startsWith("Não foi possível")) {
                                 summaryResult = "### Erro na Transcrição\n$transcript"
                             } else {
                                 summaryResult = "Transcrição obtida. Gerando resumo com IA..."
