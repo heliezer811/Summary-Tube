@@ -175,7 +175,9 @@ class OverlayService : Service(), LifecycleOwner, ViewModelStoreOwner, SavedStat
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_send),
                                     contentDescription = "Send",
-                                    tint = Color.White
+                                    tint = Color.Gray,
+                                    //tint = Color.White,
+                                    modifier = Modifier.size(28.dp)
                                 )
                             }
                         }
