@@ -90,6 +90,13 @@ fun MainScreen() {
         label = "MenuRotation"
     )
 
+    // Handler para capturar exceptions unhandled na coroutine (evita crash do app)
+    val handler = CoroutineExceptionHandler { _, exception ->
+        Log.e("SummaryTube", "Unhandled coroutine exception", exception)
+        summaryResult = "Erro inesperado: ${exception.message}. Tente novamente."
+        isLoading = false
+    }
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -181,9 +188,13 @@ fun MainScreen() {
                     },
                     onSend = {
                         if (urlText.isNotBlank()) {
+                            if (prefs.apiKey.isNotBlank()) {
+                                summaryResult = "Erro: Configure a API Key nas settings primeiro."
+                                return@LinkInputField
+                            }
                             isLoading = true
-                            Log.d("SummaryTube", "Iniciando processamento do link: $urlText") // ← Debug start
-                            scope.launch {
+                            Log.d("SummaryTube", "Iniciando processamento do link: $urlText. API Key: ${prefs.apiKey.take(5)}...") // Debug key (parcial)
+                            scope.launch(handler) {  // ← Adicione o handler aqui para capturar unhandled
                                 try {
                                     val transcript = YouTubeTranscriptHelper.fetchTranscript(urlText)
                                     Log.d("SummaryTube", "Transcrição obtida: ${transcript.take(100)}") // Debug transcript
@@ -259,7 +270,8 @@ fun LinkInputField(value: String, onValueChange: (String) -> Unit, onPaste: () -
                 Icon(
                     painter = painterResource(id = R.drawable.ic_send), 
                     contentDescription = "Send", 
-                    tint = Color.White,
+                    tint = Color.Gray,
+                    //tint = Color.White,
                     modifier = Modifier.size(28.dp)
                 )
             }
