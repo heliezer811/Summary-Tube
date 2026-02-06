@@ -214,6 +214,8 @@ fun MainScreen() {
                                         )
                                         Log.d("SummaryTube", "Resumo gerado com sucesso") // Debug sucesso
                                     }
+
+                                    summaryResult = summary
                                 } catch (e: Exception) {
                                     Log.e("SummaryTube", "Erro no processamento", e) // ← Debug erro
                                     summaryResult = "Erro ao processar: ${e.message}. Verifique link, rede ou API key nas settings."
