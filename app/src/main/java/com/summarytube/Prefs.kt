@@ -6,6 +6,12 @@ import android.content.SharedPreferences
 class Prefs(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("summary_prefs", Context.MODE_PRIVATE)
 
+    if (prefs.apiKey.isNullOrBlank()) {
+        summaryResult = "Configure sua API Key nas Settings"
+        isLoading = false
+        return@launch
+    }
+
     var apiKey: String
         get() = prefs.getString("api_key", "") ?: ""
         set(value) = prefs.edit().putString("api_key", value).apply()
