@@ -198,13 +198,19 @@ fun MainScreen() {
                             Log.d("SummaryTube", "Iniciando processamento do link: $urlText. API Key: ${prefs.apiKey.take(5)}...") // Debug key (parcial)
                             scope.launch(handler) {  // ← Adicione o handler aqui para capturar unhandled
                                 try {
-                                    val transcript = YouTubeTranscriptHelper.fetchTranscript(urlText)
+                                    val transcript = withContext(Dispatchers.IO) {
+                                        YouTubeTranscriptHelper.fetchTranscript(urlText)
+                                    }
                                     Log.d("SummaryTube", "Transcrição obtida: ${transcript.take(100)}") // Debug transcript
                                     if (transcript.startsWith("Erro") || transcript.startsWith("ID do vídeo inválido") || transcript.startsWith("Não foi possível")) {
                                         summaryResult = "### Erro na Transcrição\n$transcript"
                                     } else {
-                                        summaryResult = OpenAIService.generateSummary(
-                                            transcript, prefs.customPrompt, prefs.apiKey, prefs.selectedModel
+                                        summaryResult = withContext(Dispatchers.IO) {
+                                        OpenAIService.generateSummary(
+                                            transcript,
+                                            prefs.customPrompt,
+                                            prefs.apiKey,
+                                            prefs.selectedModel
                                         )
                                         Log.d("SummaryTube", "Resumo gerado com sucesso") // Debug sucesso
                                     }
